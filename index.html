@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Briefing vol planeur</title>
+  <meta name="description" content="Une collecte automatique de données météo et aéro">
+  <meta name="author" content="Bastien Nogaro">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/dist/reveal.css">
+  <link rel="stylesheet" href="reveal.js/dist/theme/sky.css" id="theme">
+  <link rel="stylesheet" href="css/gallery.css">
+  <link rel="stylesheet" href="css/brief.css">
+  <!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>		<![endif]-->
+</head>
+
+<body>
+  <div class="reveal center default" role="application" data-transition-speed="default"
+    data-background-transition="fade">
+    <div class="slides"
+      style="width: 960px; height: 700px; inset: 50% auto auto 50%; transform: translate(-50%, -50%) scale(0.965571);">
+      <script>
+
+        // On initialise la date du jour pour tout le document
+        var date = new Date();
+        var timeSince1970 = date.getTime();
+        var seconds = date.getUTCSeconds();
+        var minutes = date.getUTCMinutes();
+        var hours = date.getUTCHours();
+        var day = date.getUTCDate();
+        var month = date.getUTCMonth() + 1;
+        var year = date.getUTCFullYear();
+        // faisons en sorte que le premier janvier à 8 heures 2 minutes soit 01/01/2016 08:02, et non 1/1/2016 8:2  ;-)
+        if (hours.toString().length == 1) { var zero = '0'; hours = zero.concat(hours); }
+        if (minutes.toString().length == 1) { var zero = '0'; minutes = zero.concat(minutes); }
+        if (seconds.toString().length == 1) { var zero = '0'; seconds = zero.concat(seconds); }
+        if (month.toString().length == 1) { var zero = '0'; month = zero.concat(month); }
+        if (day.toString().length == 1) { var zero = '0'; day = zero.concat(day); }
+        var ymd = year.toString().concat(month.toString().concat(day.toString()));
+
+        function sleep(miliseconds) {
+          var currentTime = new Date().getTime();
+          while (currentTime + miliseconds >= new Date().getTime()) {
+          }
+        }
+      </script>
+      <!-- Premier slide -->
+      <section style="top: 103.5px; display: none;" class="past" hidden="" aria-hidden="true">
+        <h1>Briefing Vol Planeur</h1>
+        <p>
+          <medium>Montagne Noire
+            <script>document.write(day + '/' + month + '/' + year);</script>
+          </medium>
+        </p>
+      </section>
+      <!-- un slide -->
+      <!-- un slide -->
+      <section style="top: 0px; display: none;" class="past" hidden="" aria-hidden="true">
+        <h4>Prévision Front à 12H</h4>
+        <script>
+          document.write('<img src="https://cdn.knmi.nl/knmi/map/page/weer/waarschuwingen_verwachtingen/weerkaarten/PL' + day + '12_large.gif" style="height:620px">');
+        </script><img src="files/PL0312_large.gif" style="height:620px">
+      </section>
+      <!-- un slide -->
+      <section data-autoslide="11000" style="top: 0px; display: none;" class="past" hidden="" aria-hidden="true">
+        <h4>Satellite visible France</h4>
+        <iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+          src="https://widgets.meteox.com/fr-FR/widgets/radar/country/fr/satellite" style="width: 620px; height: 620px;"
+          scrolling="no" frameborder="0"></iframe>
+      </section>
+      <!-- un slide -->
+      <section style="top: 0px; display: block;" class="past" hidden="" aria-hidden="true">
+        <h4>Radar pluie</h4>
+        <iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+          src="https://widgets.meteox.com/fr-FR/widgets/radar/country/fr/rain" style="width: 620px; height: 620px;"
+          scrolling="no" frameborder="0"></iframe>
+      </section>
+      <!-- un slide -->
+      <section style="top: 0px; display: block;" class="stack past" data-previous-indexv="0" hidden=""
+        aria-hidden="true">
+        <h4>Aérologie Sud-ouest (Meteo-parapente)</h4>
+        <section data-autoslide="1" style="top: 15.5px; display: block;" class="" aria-hidden="true"> <iframe
+            src="https://meteo-parapente.com/#/43.4031,1.9885,7" width="2524" height="580"></iframe> </section>
+      </section>
+      <!-- vent sol -->
+      <section>
+        <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
+          <h4>Cartes Vent Windy (sol)</h4>
+          <iframe width="650" height="450"
+            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=ecmwf&level=surface&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
+            frameborder="0"></iframe>
+        </section>
+        <!-- vent altitude -->
+        <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
+          <h4>Cartes Vent Windy (900hpa - 900m)</h4>
+          <iframe width="650" height="450"
+            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=ecmwf&level=900h&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
+            frameborder="0"></iframe>
+        </section>
+        <!-- vent altitude -->
+        <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
+          <h4>Cartes Vent Windy (800hpa - 2000m)</h4>
+          <iframe width="650" height="450"
+            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=ecmwf&level=800h&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
+            frameborder="0"></iframe>
+        </section>
+        <!-- vent altitude -->
+        <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
+          <section data-autoslide="1" style="top: 21.5px; display: block;" class="present">
+            <h4>Cartes Vent Windy (600hpa - 4000m)</h4>
+            <iframe width="650" height="450"
+              src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=ecmwf&level=600h&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
+              frameborder="0"></iframe>
+          </section>
+        </section>
+      </section>
+      <!-- sondage météociel -->
+      <section>
+        <section style="top: 0px; display: block;" hidden="" aria-hidden="true" class="future">
+          <h4>Sondage modélisé Météociel / Montagne Noire</h4>
+          <iframe
+            src="http://www.meteociel.fr/modeles/sondage2arome.php?archive=0&amp;ech=6&amp;map=1&amp;wrf=0&amp;region=&amp;type=1&amp;lat=43.4031&amp;lon=1.9885"
+            width="1024" height="768"></iframe>
+        </section>
+        <!-- sondage météociel -->
+        <section style="top: 0px; display: block;" hidden="" aria-hidden="true" class="future">
+          <h4>Sondage modélisé Météociel / Albi</h4>
+          <iframe
+            src="http://www.meteociel.fr/modeles/sondage2arome.php?archive=0&amp;ech=6&amp;map=1&amp;wrf=0&amp;region=&amp;type=1&amp;lat=43.9004&amp;lon=1.972"
+            width="1024" height="768"></iframe>
+        </section>
+      </section>
+      <section>
+        <!-- METAR Castres -->
+        <section style="top: 0px; display: block;" hidden="" aria-hidden="true" class="future">
+          <h4>METAR Castres</h4>
+          <iframe src="https://metar-taf.com/fr/LFCK" width="1024" height="768"></iframe>
+        </section>
+        <!-- METAR Lasbordes -->
+        <section style="top: 0px; display: block;" hidden="" aria-hidden="true" class="future">
+          <h4>METAR Lasbordes</h4>
+          <iframe src="https://metar-taf.com/fr/LFCL" width="1024" height="768"></iframe>
+        </section>
+        <!-- un tableau des FL du jour en fonction du QNH, et en dessous la page que j'utilise pour determiner le qnh du jour, les heures de coucher du soleil etc etc -->
+        <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="stack future"
+          data-previous-indexv="0">
+          <section style="top: 330px; display: none;">
+            <script>
+              function round5(x) {
+                return Math.ceil(x / 5) * 5;
+              }
+
+              $(document).ready(function () {
+                $("#qnh").change(function () {
+                  var qnh_value = $("#qnh").val();
+                  var mhPa = 8.5344;
+                  var pMer = 1013.25;
+                  var delta = 0;
+                  $("#qnh").val(qnh_value);
+
+                  delta = (qnh_value - pMer) * mhPa;
+                  delta = delta.toFixed(0);
+                  $("#delta").text(delta);
+
+                  fl = delta * 1 + 1371 * 1;
+                  fl = round5(fl);
+                  ;
+                  $("#fl45").text(fl);
+
+                  fl = delta * 1 + 1676 * 1;
+                  fl = round5(fl);
+                  ;
+                  $("#fl55").text(fl);
+
+                  fl = delta * 1 + 1981 * 1;
+                  fl = round5(fl);
+                  ;
+                  $("#fl65").text(fl);
+
+                  fl = delta * 1 + 2590 * 1;
+                  fl = round5(fl);
+                  ;
+                  $("#fl85").text(fl);
+
+                  fl = delta * 1 + 2895 * 1;
+                  fl = round5(fl);
+                  ;
+                  $("#fl95").text(fl);
+
+                  fl = delta * 1 + 3505 * 1;
+                  fl = round5(fl);
+                  ;
+                  $("#fl115").text(fl);
+
+                  fl = delta * 1 + 5943 * 1;
+                  fl = round5(fl);
+                  ;
+                  $("#fl195").text(fl);
+                });
+              });
+            </script>
+            <h4>Table des Niveaux de Vol : saisir le QNH</h4>
+            <div class="div_qnh">
+              <div style="display:block; ">
+                <table class="alti">
+                  <tbody>
+                    <tr>
+                      <th>QNH</th>
+                      <th><input id="qnh" class="big_input_qnh" value="1000" type="text"></th>
+                      <th>FL</th>
+                      <th class="centre">Altitude du jour</th>
+                    </tr>
+                    <tr>
+                      <td><br>
+                      </td>
+                      <td><br>
+                      </td>
+                      <td>45</td>
+                      <td class="centre" id="fl45">1371</td>
+                    </tr>
+                    <tr>
+                      <td>Delta</td>
+                      <td id="delta">-113</td>
+                      <td>55</td>
+                      <td class="centre" id="fl55">1676</td>
+                    </tr>
+                    <tr>
+                      <td><br>
+                      </td>
+                      <td><br>
+                      </td>
+                      <td>65</td>
+                      <td class="centre" id="fl65">1981</td>
+                    </tr>
+                    <tr>
+                      <td><br>
+                      </td>
+                      <td><br>
+                      </td>
+                      <td>85</td>
+                      <td class="centre" id="fl85">2590</td>
+                    </tr>
+                    <tr>
+                      <td><br>
+                      </td>
+                      <td><br>
+                      </td>
+                      <td>95</td>
+                      <td class="centre" id="fl95">2895</td>
+                    </tr>
+                    <tr>
+                      <td><br>
+                      </td>
+                      <td><br>
+                      </td>
+                      <td>115</td>
+                      <td class="centre" id="fl115">3505</td>
+                    </tr>
+                    <tr>
+                      <td><br>
+                      </td>
+                      <td><br>
+                      </td>
+                      <td>195</td>
+                      <td class="centre" id="fl195">5943</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </section>
+      </section>
+      <section>
+        <!-- un slide NOTAM -->
+        <section data-autoslide="1" style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+          <iframe src="http://www.notaminfo.com/francemap" width="1024" height="768"></iframe>
+        </section>
+        <!-- -- slide AIP ---->
+        <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+          <h2> Consultation SUP AIP :</h2>
+          <h4>saisir LFMG comme lieu dans le tableau avant recherche</h4>
+          <p><a href="https://www.sia.aviation-civile.gouv.fr/documents/supaip/aip/id/6.php"
+              onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">SIA
+              SUP AIP</a></p>
+        </section>
+        <!-- -- slide AZBA ---->
+        <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+          <h2> Consultation Activité réseau Basse Altitude </h2>
+          <p><a href="https://azba.sia-france.fr" onclick="window.open(this.href); return false;"
+              onkeypress="window.open(this.href); return false;">SIA AZBA</a></p>
+        </section>
+      </section>
+      <!-- demain -->
+      <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+        <h2>Demain</h2>
+      </section>
+      <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+        <h4>Prévision Front à 0H UTC J+1</h4>
+        <script>
+          var tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+          var day = tomorrow.getUTCDate();
+          if (day.toString().length == 1) { var zero = '0'; day = zero.concat(day); }
+          document.write('<img src="https://cdn.knmi.nl/knmi/map/page/weer/waarschuwingen_verwachtingen/weerkaarten/PL' + day + '00_large.gif" style="height:620px;">');
+        </script><img src="files/PL0400_large.gif" style="height:620px;">
+      </section>
+      <section style="top: 0px; display: none;" hidden="" aria-hidden="true" class="future">
+        <h4>Prévisions à 24h</h4>
+        <script>
+          var jour = date.getDay();
+          if (jour == 0) {
+            image = '<img src="http://www.lameteo.org/images/previsions/lundi.png" style="height:620px">';
+          }
+          if (jour == 1) {
+            image = '<img src="http://www.lameteo.org/images/previsions/mardi.png" style="height:620px">';
+          }
+          if (jour == 2) {
+            image = '<img src="http://www.lameteo.org/images/previsions/mercredi.png" style="height:620px">';
+          }
+          if (jour == 3) {
+            image = '<img src="http://www.lameteo.org/images/previsions/jeudi.png" style="height:620px">';
+          }
+          if (jour == 4) {
+            image = '<img src="http://www.lameteo.org/images/previsions/vendredi.png" style="height:620px">';
+          }
+          if (jour == 5) {
+            image = '<img src="http://www.lameteo.org/images/previsions/samedi.png" style="height:620px">';
+          }
+          if (jour == 6) {
+            image = '<img src="http://www.lameteo.org/images/previsions/dimanche.png" style="height:620px">';
+          }
+          document.write(image);
+        </script><img src="files/lundi.png" style="height:620px">
+      </section>
+      <section style="top: 30.5px; display: none;" hidden="" aria-hidden="true" class="future">
+        <h2>Bons vols</h2>
+        <img src="http://vvmn.fr/assets/images/canon-eos-40d-3888x2592-594514-2000x1333.jpg" style="height:480px">
+      </section>
+    </div>
+    <div class="backgrounds">
+      <div class="slide-background past" style="display: none;" data-loaded="true"></div>
+      <div class="slide-background past" style="display: none;" data-loaded="true"></div>
+      <div class="slide-background past" style="display: none;" data-loaded="true"></div>
+      <div class="slide-background past" style="display: none;" data-loaded="true"></div>
+      <div class="slide-background past" style="display: none;" data-loaded="true"></div>
+      <div class="slide-background past" style="display: block;" data-loaded="true"></div>
+      <div class="slide-background stack past" style="display: block;" data-loaded="true">
+        <div class="slide-background present" style="display: block;" data-loaded="true"></div>
+      </div>
+      <div class="slide-background stack present" style="display: block;" data-loaded="true">
+        <div class="slide-background present" style="display: block;" data-loaded="true"></div>
+      </div>
+      <div class="slide-background future" style="display: block;" data-loaded="true"></div>
+      <div class="slide-background future" style="display: block;" data-loaded="true"></div>
+      <div class="slide-background stack future" style="display: none;">
+        <div class="slide-background present" style="display: none;"></div>
+      </div>
+      <div class="slide-background future" style="display: none;"></div>
+      <div class="slide-background future" style="display: none;"></div>
+      <div class="slide-background future" style="display: none;"></div>
+      <div class="slide-background future" style="display: none;"></div>
+      <div class="slide-background future" style="display: none;"></div>
+      <div class="slide-background future" style="display: none;" data-loaded="true"></div>
+      <div class="slide-background future" style="display: none;" data-loaded="true"></div>
+      <div class="slide-background future" style="display: none;" data-loaded="true"></div>
+    </div>
+    <div class="progress" style="display: block;"><span style="width: 532px;"></span></div>
+    <aside class="controls" style="display: block;"><button class="navigate-left enabled"
+        aria-label="previous slide"></button><button class="navigate-right enabled"
+        aria-label="next slide"></button><button class="navigate-up" aria-label="above slide"></button><button
+        class="navigate-down" aria-label="below slide"></button></aside>
+    <div class="slide-number" style="display: none;"></div>
+    <div class="speaker-notes" data-prevent-swipe=""></div>
+    <div class="pause-overlay"></div>
+    <div style="position: absolute; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px);"
+      id="aria-status-div" aria-live="polite" aria-atomic="true"> </div><canvas class="playback" width="50"
+      height="50"></canvas>
+  </div>
+  <script src="files/head.min.js"></script>
+  <script src="reveal.js/dist/reveal.js"></script>
+  <script>
+
+    // Full list of configuration options available at:
+    // https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: false,
+      center: true,
+      touch: true,
+      mouseWheel: false,
+      loop: true,
+
+      transition: 'default', // none/fade/slide/convex/concave/zoom
+
+      // Optional reveal.js plugins
+      dependencies: [
+        { src: 'lib/js/classList.js', condition: function () { return !document.body.classList; } },
+        //{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        //{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        //{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+        //{ src: 'plugin/zoom-js/zoom.js', async: true },
+        //{ src: 'plugin/notes/notes.js', async: true },
+        { src: 'plugin/gallery/gallery.plugin.js', async: true, condition: function () { return !!document.querySelector('.gallery'); } }
+
+      ]
+    });
+    Reveal.configure({
+      autoSlide: 5000
+    });
+    Reveal.toggleAutoSlide();
+  </script>
+  <script type="text/javascript" src="js/gallery.plugin.js"></script>
+
+
+</body>
+
+</html>
