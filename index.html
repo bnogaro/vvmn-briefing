@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="reveal.js/dist/theme/sky.css" id="theme">
   <link rel="stylesheet" href="css/gallery.css">
   <link rel="stylesheet" href="css/brief.css">
+  <script src="js/jquery.min.js"></script>
   <!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>		<![endif]-->
 </head>
@@ -101,29 +102,29 @@
             document.write('<li><img src="https://modeles7.meteociel.fr/modeles/arome/archives/' + ymd + '00/aromehd-1-17-3.png" style="height:600px;"></li>');
             document.write('<li><img src="https://modeles7.meteociel.fr/modeles/arome/archives/' + ymd + '00/aromehd-1-18-3.png" style="height:600px;"></li>');
           </script>
-          <li class="inactive"><img src="files/aromehd-1-7-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-7-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-8-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-8-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-9-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-9-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-10-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-10-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-11-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-11-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-12-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-12-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-13-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-13-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-14-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-14-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-15-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-15-3.png" style="height:600px;">
           </li>
-          <li class="active"><img src="files/aromehd-1-16-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-16-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-17-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-17-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="files/aromehd-1-18-3.png" style="height:600px;">
+          <li><img src="files/aromehd-1-18-3.png" style="height:600px;">
           </li>
         </ul>
       </section>
@@ -213,6 +214,86 @@
                 onkeypress="window.open(this.href); return false;">SIA AZBA</a></p>
           </section>
         </section>
+      </section>
+      <!-- un tableau des FL du jour en fonction du QNH, et en dessous la page que j'utilise pour determiner le qnh du jour, les heures de coucher du soleil etc etc -->
+      <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="stack future">
+        <section style="top: 330px; display: none;">
+          <script>
+            function round5(x) {
+              return Math.ceil(x / 5) * 5;
+            }
+
+            $(document).ready(function () {
+              $("#qnh").change(function () {
+                var qnh_value = $("#qnh").val();
+                var mhPa = 8.5344;
+                var pMer = 1013.25;
+                var delta = 0;
+                $("#qnh").val(qnh_value);
+
+                delta = (qnh_value - pMer) * mhPa;
+                delta = delta.toFixed(0);
+                $("#delta").text(delta);
+
+                fl = delta * 1 + 1981 * 1;
+                fl = round5(fl);
+                ;
+                $("#fl65").text(fl);
+
+                fl = delta * 1 + 3505 * 1;
+                fl = round5(fl);
+                ;
+                $("#fl115").text(fl);
+
+                fl = delta * 1 + 5944 * 1;
+                fl = round5(fl);
+                ;
+                $("#fl195").text(fl);              });
+            });
+          </script>
+
+          <h4>Table des Niveaux de Vol</h4>
+          <div class="div_qnh" style="height:fit-content;">
+            <div style="display:block; ">
+              <table class="alti">
+                <tbody>
+                  <tr>
+                    <th>QNH</th>
+                    <th><input type="text" id="qnh" class="big_input_qnh" value="1000"></th>
+                    <th>FL</th>
+                    <th class="centre">Altitude du jour</th>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td>65</td>
+                    <td class="centre" id="fl65">2175</td>
+                  </tr>
+                  <tr>
+                    <td>Delta</td>
+                    <td id="delta">-113</td>
+                    <td>115</td>
+                    <td class="centre" id="fl115">3395</td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td></td>
+                    <td>195</td>
+                    <td class="centre" id="fl195">3700</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="display:block; margin:10px; text-align:left">
+              <p> Coucher soleil : <input type="text" id="ss" class="big_input_qnh"> </p>
+              <p>Fin des vols : <input type="text" id="fdv" class="big_input_qnh"></p>
+            </div>
+
+          </div>
+
+        </section>
+
+
       </section>
       <!-- demain -->
       <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
