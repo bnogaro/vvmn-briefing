@@ -82,6 +82,10 @@
       <!-- un slide -->
       <section data-autoslide="13000" style="top: 0px; display: block;" class="present">
         <h4>Précipitations </h4>
+        <!-- AROME data path: archives/yyyymmddhh/aromehd-x-y-z -->
+        <!-- with x=0 for temperature, 1 for rain, 3 for wind, 4 for  -->
+        <!-- with z=0 for France, 1 for NW, 2 for NE, 3 for SW, 4 for SE, 5 for Belgium, 6 for Swiss -->
+        <!-- with y selects the incremental forecast by hour -->
         <ul class="gallery" data-interval="1" data-iterations="0">
           <script class="enLigne">
             document.write('<li><img src="https://modeles7.meteociel.fr/modeles/arome/archives/' + ymd + '00/aromehd-1-7-3.png" style="height:600px;"></li>');
@@ -97,29 +101,29 @@
             document.write('<li><img src="https://modeles7.meteociel.fr/modeles/arome/archives/' + ymd + '00/aromehd-1-17-3.png" style="height:600px;"></li>');
             document.write('<li><img src="https://modeles7.meteociel.fr/modeles/arome/archives/' + ymd + '00/aromehd-1-18-3.png" style="height:600px;"></li>');
           </script>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-7-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-7-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-8-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-8-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-9-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-9-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-10-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-10-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-11-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-11-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-12-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-12-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-13-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-13-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-14-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-14-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-15-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-15-3.png" style="height:600px;">
           </li>
-          <li class="active"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-16-3.png" style="height:600px;">
+          <li class="active"><img src="files/aromehd-1-16-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-17-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-17-3.png" style="height:600px;">
           </li>
-          <li class="inactive"><img src="Briefing%20m%C3%A9t%C3%A9o_fichiers/aromehd-1-18-3.png" style="height:600px;">
+          <li class="inactive"><img src="files/aromehd-1-18-3.png" style="height:600px;">
           </li>
         </ul>
       </section>
@@ -189,154 +193,25 @@
           <h4>METAR Lasbordes</h4>
           <iframe src="https://metar-taf.com/fr/LFCL" width="1024" height="600"></iframe>
         </section>
-        <!-- un tableau des FL du jour en fonction du QNH, et en dessous la page que j'utilise pour determiner le qnh du jour, les heures de coucher du soleil etc etc -->
-        <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="stack future"
-          data-previous-indexv="0">
-          <section style="top: 330px; display: none;">
-            <script>
-              function round5(x) {
-                return Math.ceil(x / 5) * 5;
-              }
-
-              $(document).ready(function () {
-                $("#qnh").change(function () {
-                  var qnh_value = $("#qnh").val();
-                  var mhPa = 8.5344;
-                  var pMer = 1013.25;
-                  var delta = 0;
-                  $("#qnh").val(qnh_value);
-
-                  delta = (qnh_value - pMer) * mhPa;
-                  delta = delta.toFixed(0);
-                  $("#delta").text(delta);
-
-                  fl = delta * 1 + 1371 * 1;
-                  fl = round5(fl);
-                  ;
-                  $("#fl45").text(fl);
-
-                  fl = delta * 1 + 1676 * 1;
-                  fl = round5(fl);
-                  ;
-                  $("#fl55").text(fl);
-
-                  fl = delta * 1 + 1981 * 1;
-                  fl = round5(fl);
-                  ;
-                  $("#fl65").text(fl);
-
-                  fl = delta * 1 + 2590 * 1;
-                  fl = round5(fl);
-                  ;
-                  $("#fl85").text(fl);
-
-                  fl = delta * 1 + 2895 * 1;
-                  fl = round5(fl);
-                  ;
-                  $("#fl95").text(fl);
-
-                  fl = delta * 1 + 3505 * 1;
-                  fl = round5(fl);
-                  ;
-                  $("#fl115").text(fl);
-
-                  fl = delta * 1 + 5943 * 1;
-                  fl = round5(fl);
-                  ;
-                  $("#fl195").text(fl);
-                });
-              });
-            </script>
-            <h4>Table des Niveaux de Vol : saisir le QNH</h4>
-            <div class="div_qnh">
-              <div style="display:block; ">
-                <table class="alti">
-                  <tbody>
-                    <tr>
-                      <th>QNH</th>
-                      <th><input id="qnh" class="big_input_qnh" value="1000" type="text"></th>
-                      <th>FL</th>
-                      <th class="centre">Altitude du jour</th>
-                    </tr>
-                    <tr>
-                      <td><br>
-                      </td>
-                      <td><br>
-                      </td>
-                      <td>45</td>
-                      <td class="centre" id="fl45">1371</td>
-                    </tr>
-                    <tr>
-                      <td>Delta</td>
-                      <td id="delta">-113</td>
-                      <td>55</td>
-                      <td class="centre" id="fl55">1676</td>
-                    </tr>
-                    <tr>
-                      <td><br>
-                      </td>
-                      <td><br>
-                      </td>
-                      <td>65</td>
-                      <td class="centre" id="fl65">1981</td>
-                    </tr>
-                    <tr>
-                      <td><br>
-                      </td>
-                      <td><br>
-                      </td>
-                      <td>85</td>
-                      <td class="centre" id="fl85">2590</td>
-                    </tr>
-                    <tr>
-                      <td><br>
-                      </td>
-                      <td><br>
-                      </td>
-                      <td>95</td>
-                      <td class="centre" id="fl95">2895</td>
-                    </tr>
-                    <tr>
-                      <td><br>
-                      </td>
-                      <td><br>
-                      </td>
-                      <td>115</td>
-                      <td class="centre" id="fl115">3505</td>
-                    </tr>
-                    <tr>
-                      <td><br>
-                      </td>
-                      <td><br>
-                      </td>
-                      <td>195</td>
-                      <td class="centre" id="fl195">5943</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+        <section>
+          <!-- un slide NOTAM -->
+          <section data-autoslide="1" style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+            <iframe src="https://www.notaminfo.com/francemap" width="1024" height="600"></iframe>
           </section>
-        </section>
-      </section>
-      <section>
-        <!-- un slide NOTAM -->
-        <section data-autoslide="1" style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
-          <iframe src="https://www.notaminfo.com/francemap" width="1024" height="600"></iframe>
-        </section>
-        <!-- -- slide AIP ---->
-        <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
-          <h2> Consultation SUP AIP :</h2>
-          <h4>saisir LFMG comme lieu dans le tableau avant recherche</h4>
-          <p><a href="https://www.sia.aviation-civile.gouv.fr/documents/supaip/aip/id/6.php"
-              onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">SIA
-              SUP AIP</a></p>
-        </section>
-        <!-- -- slide AZBA ---->
-        <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
-          <h2> Consultation Activité réseau Basse Altitude </h2>
-          <p><a href="https://azba.sia-france.fr" onclick="window.open(this.href); return false;"
-              onkeypress="window.open(this.href); return false;">SIA AZBA</a></p>
+          <!-- -- slide AIP ---->
+          <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+            <h2> Consultation SUP AIP :</h2>
+            <h4>saisir LFMG comme lieu dans le tableau avant recherche</h4>
+            <p><a href="https://www.sia.aviation-civile.gouv.fr/documents/supaip/aip/id/6.php"
+                onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">SIA
+                SUP AIP</a></p>
+          </section>
+          <!-- -- slide AZBA ---->
+          <section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="future">
+            <h2> Consultation Activité réseau Basse Altitude </h2>
+            <p><a href="https://azba.sia-france.fr" onclick="window.open(this.href); return false;"
+                onkeypress="window.open(this.href); return false;">SIA AZBA</a></p>
+          </section>
         </section>
       </section>
       <!-- demain -->
@@ -357,32 +232,32 @@
         <script>
           var jour = date.getDay();
           if (jour == 0) {
-              image = '<img src="https://www.lameteo.org/images/previsions/lundi.png" style="height:620px">';
+            image = '<img src="https://www.lameteo.org/images/previsions/lundi.png" style="height:620px">';
           }
           if (jour == 1) {
-              image = '<img src="https://www.lameteo.org/images/previsions/mardi.png" style="height:620px">';
+            image = '<img src="https://www.lameteo.org/images/previsions/mardi.png" style="height:620px">';
           }
           if (jour == 2) {
-              image = '<img src="https://www.lameteo.org/images/previsions/mercredi.png" style="height:620px">';
+            image = '<img src="https://www.lameteo.org/images/previsions/mercredi.png" style="height:620px">';
           }
           if (jour == 3) {
-              image = '<img src="https://www.lameteo.org/images/previsions/jeudi.png" style="height:620px">';
+            image = '<img src="https://www.lameteo.org/images/previsions/jeudi.png" style="height:620px">';
           }
           if (jour == 4) {
-              image = '<img src="https://www.lameteo.org/images/previsions/vendredi.png" style="height:620px">';
+            image = '<img src="https://www.lameteo.org/images/previsions/vendredi.png" style="height:620px">';
           }
           if (jour == 5) {
-              image = '<img src="https://www.lameteo.org/images/previsions/samedi.png" style="height:620px">';
+            image = '<img src="https://www.lameteo.org/images/previsions/samedi.png" style="height:620px">';
           }
           if (jour == 6) {
-              image = '<img src="https://www.lameteo.org/images/previsions/dimanche.png" style="height:620px">';
+            image = '<img src="https://www.lameteo.org/images/previsions/dimanche.png" style="height:620px">';
           }
           document.write(image);
         </script><img src="files/lundi.png" style="height:620px">
       </section>
       <section style="top: 30.5px; display: none;" hidden="" aria-hidden="true" class="future">
         <h2>Bons vols</h2>
-          <img src="https://vvmn.fr/assets/images/canon-eos-40d-3888x2592-594514-2000x1333.jpg" style="height:480px">
+        <img src="https://vvmn.fr/assets/images/canon-eos-40d-3888x2592-594514-2000x1333.jpg" style="height:480px">
       </section>
     </div>
     <div class="backgrounds">
@@ -454,7 +329,7 @@
       ]
     });
     Reveal.configure({
-      autoSlide: 5000
+      autoSlide: 20000
     });
     Reveal.toggleAutoSlide();
   </script>
