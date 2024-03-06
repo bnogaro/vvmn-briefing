@@ -43,11 +43,32 @@
         if (day.toString().length == 1) { var zero = '0'; day = zero.concat(day); }
         var ymd = year.toString().concat(month.toString().concat(day.toString()));
 
-        function sleep(miliseconds) {
-          var currentTime = new Date().getTime();
-          while (currentTime + miliseconds >= new Date().getTime()) {
+        // declaring terrain longitude and latitude for weather and sunset requests
+        var lon = "1.9891666666666667"
+        var lat = "43.4063889"
+
+        // Fetch sunset
+        const apiUrl = 'https://api.sunrise-sunset.org/json?lat=' + lat + '&lng=' + lon + '&date=today&tzid=europe/paris';
+
+        // Function to fetch data from the API and filter the 'sunset' value
+        async function fetchSunset() {
+          try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json(); // Parse the response as JSON
+            const sunset = data.results.sunset; // Access the 'sunset' value
+            console.log('Fetched sunset from api.sunrise-sunset.org: ' + sunset); // Log the 'sunset' value
+            // Update the HTML element with the 'sunset' value
+            document.getElementById('sunsetDisplay').textContent = `Coucher de soleil: ${sunset}`;
+          } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
           }
         }
+
+        // Call the function to fetch the data and log the 'sunset' value
+        fetchSunset();
       </script>
       <!-- Premier slide -->
       <section style="top: 103.5px; display: none;" class="past" hidden="" aria-hidden="true">
@@ -59,12 +80,11 @@
         </p>
       </section>
       <!-- un slide -->
-      <!-- un slide -->
       <section style="top: 0px; display: none;" class="past" hidden="" aria-hidden="true">
         <h4>Prévision Front à 12H</h4>
         <script>
           document.write('<img src="https://cdn.knmi.nl/knmi/map/page/weer/waarschuwingen_verwachtingen/weerkaarten/PL' + day + '12_large.gif" style="height:620px">');
-        </script><img src="files/PL0312_large.gif" style="height:620px">
+        </script>
       </section>
       <!-- un slide -->
       <section data-autoslide="11000" style="top: 0px; display: none;" class="past" hidden="" aria-hidden="true">
@@ -108,38 +128,41 @@
       <section style="top: 0px; display: block;" class="stack past" data-previous-indexv="0" hidden=""
         aria-hidden="true">
         <h4>Aérologie Sud-ouest (Meteo-parapente)</h4>
-        <section data-autoslide="1" style="top: 15.5px; display: block;" class="" aria-hidden="true"> <iframe
-            src="https://meteo-parapente.com/#/43.4031,1.9885,7" width="2524" height="580"></iframe> </section>
+        <section data-autoslide="1" style="top: 15.5px; display: block;" class="" aria-hidden="true">
+          <script>
+            document.write('<iframe src="https://meteo-parapente.com/#/' + lat + ',' + lon + ',7" width="2524" height="580"></iframe>');
+          </script>
+        </section>
       </section>
       <!-- vent sol -->
       <section>
         <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
           <h4>Cartes Vent Windy (sol)</h4>
-          <iframe width="650" height="600"
-            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=surface&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
-            frameborder="0"></iframe>
+          <script>
+            document.write('<iframe width="650" height="600" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=surface&lat=' + lat + '&lon=' + lon + '&detailLat=' + lat + '&detailLon=' + lon + '&marker=true&pressure=true&message=true" frameborder="0"></iframe>')
+          </script>
         </section>
         <!-- vent altitude -->
         <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
           <h4>Cartes Vent Windy (900hpa - 900m)</h4>
-          <iframe width="650" height="600"
-            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=900h&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
-            frameborder="0"></iframe>
+          <script>
+            document.write('<iframe width="650" height="600" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=900h&lat=' + lat + '&lon=' + lon + '&detailLat=' + lat + '&detailLon=' + lon + '&marker=true&pressure=true&message=true" frameborder="0"></iframe>')
+          </script>
         </section>
         <!-- vent altitude -->
         <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
           <h4>Cartes Vent Windy (800hpa - 2000m)</h4>
-          <iframe width="650" height="600"
-            src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=800h&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
-            frameborder="0"></iframe>
+          <script>
+            document.write('<iframe width="650" height="600" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=800h&lat=' + lat + '&lon=' + lon + '&detailLat=' + lat + '&detailLon=' + lon + '&marker=true&pressure=true&message=true" frameborder="0"></iframe>')
+          </script>
         </section>
         <!-- vent altitude -->
         <section style="top: 0px; display: block;" class="stack present" data-previous-indexv="0">
           <section data-autoslide="1" style="top: 21.5px; display: block;" class="present">
             <h4>Cartes Vent Windy (600hpa - 4000m)</h4>
-            <iframe width="650" height="600"
-              src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=600h&lat=43.403&lon=1.989&detailLat=43.403&detailLon=1.989&marker=true&pressure=true&message=true"
-              frameborder="0"></iframe>
+            <script>
+              document.write('<iframe width="650" height="600" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=6&overlay=wind&product=arome&level=600h&lat=' + lat + '&lon=' + lon + '&detailLat=' + lat + '&detailLon=' + lon + '&marker=true&pressure=true&message=true" frameborder="0"></iframe>')
+            </script>
           </section>
         </section>
       </section>
@@ -262,12 +285,11 @@
               </table>
             </div>
             <div style="display:block; margin:10px; text-align:left">
-              <p> Coucher soleil : <input type="text" id="ss" class="big_input_qnh"> </p>
+              <p id="sunsetDisplay"></p>
               <p>Fin des vols : <input type="text" id="fdv" class="big_input_qnh"></p>
             </div>
 
           </div>
-
         </section>
 
 
@@ -283,7 +305,7 @@
           var day = tomorrow.getUTCDate();
           if (day.toString().length == 1) { var zero = '0'; day = zero.concat(day); }
           document.write('<img src="https://cdn.knmi.nl/knmi/map/page/weer/waarschuwingen_verwachtingen/weerkaarten/PL' + day + '00_large.gif" style="height:620px;">');
-        </script><img src="files/PL0400_large.gif" style="height:620px;">
+        </script>
       </section>
       <section style="top: 0px; display: none;" hidden="" aria-hidden="true" class="future">
         <h4>Prévisions à 24h</h4>
@@ -311,7 +333,7 @@
             image = '<img src="https://www.lameteo.org/images/previsions/dimanche.png" style="height:620px">';
           }
           document.write(image);
-        </script><img src="files/lundi.png" style="height:620px">
+        </script>
       </section>
       <section style="top: 30.5px; display: none;" hidden="" aria-hidden="true" class="future">
         <h2>Bons vols</h2>
