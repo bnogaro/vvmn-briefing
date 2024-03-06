@@ -1,3 +1,10 @@
+## 0.2.0 (2024-03-06)
+
+### Feat
+
+- automatic query of QNH from Castres
+- automatically fetch sunset time from api.sunrise-sunset.org
+
 ## 0.1.0 (2024-03-06)
 
 ### Feat
