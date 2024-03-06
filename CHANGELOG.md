@@ -1,3 +1,9 @@
+## 0.2.1 (2024-03-06)
+
+### Fix
+
+- woops, puts back NOTAM, SUPAIP and AZBA removed in 55b0d32
+
 ## 0.2.0 (2024-03-06)
 
 ### Feat
