@@ -36,7 +36,8 @@ export function jsonResponse(body, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
 }
 
-export const DEFAULT_SUNSET = { results: { sunset: '7:15:23 PM' }, status: 'OK' };
+// As returned with formatted=0 and tzid=europe/paris.
+export const DEFAULT_SUNSET = { results: { sunset: '2024-03-06T19:15:23+01:00' }, status: 'OK' };
 export const metarWithQnh = (mb) => ({ results: 1, data: [{ icao: 'LFCK', barometer: { hg: 0, hpa: mb, kpa: 0, mb } }] });
 
 export function defaultFetch(url) {

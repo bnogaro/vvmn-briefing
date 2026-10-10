@@ -72,3 +72,14 @@ describe('utcDate', () => {
     assert.equal(Briefing.utcDate(new Date('2024-01-05T23:30:00-02:00')).ymd, '20240106');
   });
 });
+
+describe('parisTime', () => {
+  test('formats in Paris time, summer and winter', () => {
+    assert.equal(Briefing.parisTime('2024-07-01T19:45:00Z'), '21:45');
+    assert.equal(Briefing.parisTime('2024-12-01T16:05:00Z'), '17:05');
+  });
+
+  test('throws on an invalid time', () => {
+    assert.throws(() => Briefing.parisTime(undefined), /invalid time/);
+  });
+});

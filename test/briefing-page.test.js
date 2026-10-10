@@ -109,7 +109,7 @@ describe('maps centred on the airfield', () => {
 });
 
 describe('sunset', () => {
-  test('requests today\'s sunset at the airfield in Paris time', async (t) => {
+  test('requests today\'s sunset at the airfield as an ISO timestamp', async (t) => {
     const { fetchCalls } = await withPage(t);
     const url = new URL(fetchCalls.find((call) => call.startsWith('https://api.sunrise-sunset.org/')));
     assert.equal(url.pathname, '/json');
@@ -117,17 +117,18 @@ describe('sunset', () => {
     assert.equal(url.searchParams.get('lng'), LON);
     assert.equal(url.searchParams.get('date'), 'today');
     assert.equal(url.searchParams.get('tzid'), 'europe/paris');
+    assert.equal(url.searchParams.get('formatted'), '0');
   });
 
-  test('displays the sunset time', async (t) => {
+  test('displays the sunset in Paris time, 24h format', async (t) => {
     const { document } = await withPage(t);
-    assert.equal(document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil: 7:15:23 PM');
+    assert.equal(document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : 19:15');
   });
 
-  test('leaves the sunset empty and logs when the API fails', async (t) => {
+  test('says the sunset is unavailable and logs when the API fails', async (t) => {
     const fetch = (url) => (url.includes('sunrise-sunset') ? jsonResponse({}, 500) : defaultFetch(url));
     const page = await withPage(t, { fetch });
-    assert.equal(page.document.getElementById('sunsetDisplay').textContent, '');
+    assert.equal(page.document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : indisponible');
     assert.equal(page.consoleErrors.length, 1);
     assert.deepEqual(page.uncaughtErrors, []);
   });

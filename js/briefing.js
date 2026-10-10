@@ -88,8 +88,16 @@
     return qnh;
   }
 
-  const sunsetUrl = () => `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&date=today&tzid=europe/paris`;
+  const sunsetUrl = () =>
+    `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&date=today&tzid=europe/paris&formatted=0`;
   const metarUrl = () => `https://api.checkwx.com/metar/${METAR_AIRPORT}/decoded?x-api-key=${CHECKWX_API_KEY}`;
+
+  // "19:15" in Paris time, from an ISO 8601 timestamp.
+  function parisTime(iso) {
+    const time = new Date(iso);
+    if (Number.isNaN(time.getTime())) throw new Error(`invalid time: ${iso}`);
+    return time.toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
+  }
 
   async function fetchJson(url) {
     const response = await fetch(url);
@@ -123,13 +131,15 @@
   }
 
   async function showSunset(document) {
+    const display = document.getElementById('sunsetDisplay');
     try {
       const body = await fetchJson(sunsetUrl());
-      const sunset = body.results.sunset;
+      const sunset = parisTime(body.results.sunset);
       console.log(`Fetched sunset from api.sunrise-sunset.org: ${sunset}`);
-      document.getElementById('sunsetDisplay').textContent = `Coucher de soleil: ${sunset}`;
+      display.textContent = `Coucher de soleil : ${sunset}`;
     } catch (error) {
-      console.error('There was a problem with the fetch operation:', error);
+      console.error('Could not fetch the sunset:', error);
+      display.textContent = 'Coucher de soleil : indisponible';
     }
   }
 
@@ -162,6 +172,7 @@
     qnhDelta,
     floorTo5,
     qnhFromMetar,
+    parisTime,
     render,
     showSunset,
     showFlightLevels,
