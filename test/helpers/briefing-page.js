@@ -4,7 +4,8 @@
 // - The page is served from a fake https origin: jsdom request interceptors
 //   do not see file:// URLs, so local files are answered from disk here.
 // - reveal.js is replaced by a recording stub (it needs real layout/canvas).
-// - Every other external request (iframes, fonts...) gets an empty response.
+// - Stylesheets are served empty, every other external request (iframes,
+//   fonts...) gets an empty response.
 // - window.fetch (used for sunset and METAR) is replaced by `fetch` below.
 // - `new Date()` / `Date.now()` return the fixed instant `now`.
 
@@ -72,9 +73,11 @@ export async function loadBriefing({ now = '2024-03-06T12:00:00Z', fetch = defau
           if (request.url.startsWith(ORIGIN)) {
             const relative = decodeURIComponent(new URL(request.url).pathname).slice(1);
             try {
+              const extension = path.extname(relative);
               const body = await readFile(path.join(ROOT, relative));
-              const type = CONTENT_TYPES[path.extname(relative)] ?? 'application/octet-stream';
-              return new Response(body, { headers: { 'Content-Type': type } });
+              const type = CONTENT_TYPES[extension] ?? 'application/octet-stream';
+              // Stylesheets are checked to exist but not parsed: no test looks at styles.
+              return new Response(extension === '.css' ? '' : body, { headers: { 'Content-Type': type } });
             } catch {
               missingFiles.push(relative);
               return new Response('not found', { status: 404 });

@@ -1,4 +1,4 @@
-import { test, describe } from 'node:test';
+import { test, describe, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadBriefing, jsonResponse, defaultFetch, metarWithQnh } from './helpers/briefing-page.js';
 
@@ -12,30 +12,36 @@ async function withPage(t, options) {
   return page;
 }
 
+// One page with the default date (2024-03-06, noon UTC) and API answers, shared
+// by the tests that only read it: each page load builds a whole jsdom window.
+let sharedPage;
+const defaultPage = () => (sharedPage ??= loadBriefing());
+after(async () => (await sharedPage)?.close());
+
 const imageSources = (document, prefix) =>
   [...document.querySelectorAll(`img[src^="${prefix}"]`)].map((img) => img.getAttribute('src'));
 
 describe('page load', () => {
-  test('runs every script without uncaught errors', async (t) => {
-    const page = await withPage(t);
+  test('runs every script without uncaught errors', async () => {
+    const page = await defaultPage();
     assert.deepEqual(page.uncaughtErrors, []);
     assert.deepEqual(page.consoleErrors, []);
   });
 
-  test('requests no missing local file', async (t) => {
-    const page = await withPage(t);
+  test('requests no missing local file', async () => {
+    const page = await defaultPage();
     assert.deepEqual(page.missingFiles, []);
   });
 
-  test('starts reveal.js as a looping, auto-advancing kiosk', async (t) => {
-    const { reveal } = await withPage(t);
+  test('starts reveal.js as a looping, auto-advancing kiosk', async () => {
+    const { reveal } = await defaultPage();
     assert.equal(reveal.initOptions.loop, true);
     assert.equal(reveal.initOptions.history, false);
     assert.equal(reveal.initOptions.autoSlide, 20000);
   });
 
-  test('keeps every slide on screen for at least 5 seconds', async (t) => {
-    const { document } = await withPage(t);
+  test('keeps every slide on screen for at least 5 seconds', async () => {
+    const { document } = await defaultPage();
     for (const slide of document.querySelectorAll('section[data-autoslide]')) {
       const title = slide.querySelector('h2, h4')?.textContent;
       assert.ok(Number(slide.dataset.autoslide) >= 5000, `${title}: ${slide.dataset.autoslide} ms`);
@@ -44,8 +50,8 @@ describe('page load', () => {
 });
 
 describe('date-dependent content', () => {
-  test('title slide shows the UTC date as DD/MM/YYYY', async (t) => {
-    const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
+  test('title slide shows the UTC date as DD/MM/YYYY', async () => {
+    const { document } = await defaultPage();
     assert.equal(document.querySelector('section p').textContent, 'Montagne Noire 06/03/2024');
   });
 
@@ -54,8 +60,8 @@ describe('date-dependent content', () => {
     assert.equal(document.querySelector('section p').textContent, 'Montagne Noire 06/01/2024');
   });
 
-  test('rain gallery shows 07h to 18h of the day\'s 00Z AROME run for south-west France', async (t) => {
-    const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
+  test('rain gallery shows 07h to 18h of the day\'s 00Z AROME run for south-west France', async () => {
+    const { document } = await defaultPage();
     const expected = Array.from(
       { length: 12 },
       (_, i) => `https://modeles7.meteociel.fr/modeles/arome/runs/2024030600/aromehd-1-${i + 7}-3.png`,
@@ -64,8 +70,8 @@ describe('date-dependent content', () => {
     assert.deepEqual(frames, expected);
   });
 
-  test('front map shows today 12h and tomorrow 00h from KNMI', async (t) => {
-    const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
+  test('front map shows today 12h and tomorrow 00h from KNMI', async () => {
+    const { document } = await defaultPage();
     const base = 'https://cdn.knmi.nl/knmi/map/page/weer/waarschuwingen_verwachtingen/weerkaarten/';
     assert.deepEqual(imageSources(document, base), [`${base}PL0612_large.gif`, `${base}PL0700_large.gif`]);
   });
@@ -98,8 +104,8 @@ describe('date-dependent content', () => {
 });
 
 describe('maps centred on the airfield', () => {
-  test('Windy wind maps cover surface, 900, 800 and 600 hPa with AROME', async (t) => {
-    const { document } = await withPage(t);
+  test('Windy wind maps cover surface, 900, 800 and 600 hPa with AROME', async () => {
+    const { document } = await defaultPage();
     const maps = [...document.querySelectorAll('iframe[src^="https://embed.windy.com/"]')].map(
       (iframe) => new URL(iframe.getAttribute('src')).searchParams,
     );
@@ -114,14 +120,14 @@ describe('maps centred on the airfield', () => {
     }
   });
 
-  test('Meteo-parapente is centred on the airfield', async (t) => {
-    const { document } = await withPage(t);
+  test('Meteo-parapente is centred on the airfield', async () => {
+    const { document } = await defaultPage();
     const iframe = document.querySelector('iframe[src^="https://meteo-parapente.com/"]');
     assert.equal(iframe.getAttribute('src'), `https://meteo-parapente.com/#/${LAT},${LON},7`);
   });
 
-  test('Meteociel soundings cover the airfield and Albi, 6 hours into the AROME run', async (t) => {
-    const { document } = await withPage(t);
+  test('Meteociel soundings cover the airfield and Albi, 6 hours into the AROME run', async () => {
+    const { document } = await defaultPage();
     const soundings = [...document.querySelectorAll('iframe[src^="https://www.meteociel.fr/modeles/sondage2arome.php"]')].map(
       (iframe) => new URL(iframe.getAttribute('src')).searchParams,
     );
@@ -136,8 +142,8 @@ describe('maps centred on the airfield', () => {
 });
 
 describe('sunset', () => {
-  test('requests today\'s sunset at the airfield as an ISO timestamp', async (t) => {
-    const { fetchCalls } = await withPage(t);
+  test('requests today\'s sunset at the airfield as an ISO timestamp', async () => {
+    const { fetchCalls } = await defaultPage();
     const url = new URL(fetchCalls.find((call) => call.startsWith('https://api.sunrise-sunset.org/')));
     assert.equal(url.pathname, '/json');
     assert.equal(url.searchParams.get('lat'), LAT);
@@ -147,13 +153,13 @@ describe('sunset', () => {
     assert.equal(url.searchParams.get('formatted'), '0');
   });
 
-  test('displays the sunset in Paris time, 24h format', async (t) => {
-    const { document } = await withPage(t);
+  test('displays the sunset in Paris time, 24h format', async () => {
+    const { document } = await defaultPage();
     assert.equal(document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : 19:15');
   });
 
-  test('fills in the end of flights 30 minutes after sunset, at aeronautical night', async (t) => {
-    const { document } = await withPage(t);
+  test('fills in the end of flights 30 minutes after sunset, at aeronautical night', async () => {
+    const { document } = await defaultPage();
     assert.equal(document.getElementById('fdv').value, '19:45');
   });
 
@@ -182,8 +188,8 @@ describe('sunset', () => {
 });
 
 describe('flight level table', () => {
-  test('requests the decoded METAR of Castres (LFCK)', async (t) => {
-    const { fetchCalls } = await withPage(t);
+  test('requests the decoded METAR of Castres (LFCK)', async () => {
+    const { fetchCalls } = await defaultPage();
     const url = new URL(fetchCalls.find((call) => call.startsWith('https://api.checkwx.com/')));
     assert.equal(url.pathname, '/metar/LFCK/decoded');
     assert.ok(url.searchParams.get('x-api-key'), 'API key is sent');
