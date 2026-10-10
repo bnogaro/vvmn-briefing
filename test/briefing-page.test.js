@@ -164,27 +164,26 @@ describe('flight level table', () => {
     });
   }
 
-  // Known bugs: on failure the table keeps the hard-coded sample values
-  // (2175 / 3395 / 3700 m, delta -113) and fetchQnh() rejects unhandled.
-  const assertNoAltitudeShown = (page) => {
-    for (const id of ['delta', 'fl65', 'fl115', 'fl195']) {
-      assert.doesNotMatch(page.document.getElementById(id).textContent, /\d/, `#${id} shows a number`);
-    }
-    assert.deepEqual(page.uncaughtErrors, []);
+  const failures = {
+    'the METAR request fails': () => {
+      throw new TypeError('Failed to fetch');
+    },
+    'the METAR API answers an error': () => jsonResponse({ error: 'Unauthorized' }, 401),
+    'the METAR has no observation': () => jsonResponse({ results: 0, data: [] }),
+    'the METAR QNH is implausible': () => jsonResponse(metarWithQnh(29.92)),
   };
-
-  test('shows no altitude when the METAR request fails', { todo: 'stale sample altitudes are displayed' }, async (t) => {
-    const fetch = (url) => {
-      if (url.includes('checkwx')) throw new TypeError('Failed to fetch');
-      return defaultFetch(url);
-    };
-    assertNoAltitudeShown(await withPage(t, { fetch }));
-  });
-
-  test('shows no altitude when the METAR has no observation', { todo: 'data.data[0] is undefined' }, async (t) => {
-    const fetch = (url) => (url.includes('checkwx') ? jsonResponse({ results: 0, data: [] }) : defaultFetch(url));
-    assertNoAltitudeShown(await withPage(t, { fetch }));
-  });
+  for (const [failure, checkwx] of Object.entries(failures)) {
+    test(`shows no altitude when ${failure}`, async (t) => {
+      const fetch = (url) => (url.includes('checkwx') ? checkwx() : defaultFetch(url));
+      const page = await withPage(t, { fetch });
+      assert.equal(page.document.getElementById('qnh').textContent, 'indisponible');
+      for (const id of ['delta', 'fl65', 'fl115', 'fl195']) {
+        assert.equal(page.document.getElementById(id).textContent, '—', `#${id}`);
+      }
+      assert.equal(page.consoleErrors.length, 1);
+      assert.deepEqual(page.uncaughtErrors, []);
+    });
+  }
 });
 
 describe('gallery wiring', () => {

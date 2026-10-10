@@ -42,6 +42,24 @@ test('floorTo5 rounds down to a multiple of 5 m', () => {
   assert.deepEqual([3630, 3632.36, 3634.99, 3635].map(Briefing.floorTo5), [3630, 3630, 3630, 3635]);
 });
 
+describe('qnhFromMetar', () => {
+  test('reads the QNH of the first observation', () => {
+    assert.equal(Briefing.qnhFromMetar({ results: 1, data: [{ barometer: { mb: 1021 } }] }), 1021);
+  });
+
+  const unusable = {
+    'no body': null,
+    'no observation': { results: 0, data: [] },
+    'no barometer': { results: 1, data: [{ icao: 'LFCK' }] },
+    'inches of mercury': { results: 1, data: [{ barometer: { mb: 29.92 } }] },
+  };
+  for (const [name, body] of Object.entries(unusable)) {
+    test(`throws for ${name}`, () => {
+      assert.throws(() => Briefing.qnhFromMetar(body), /no usable QNH/);
+    });
+  }
+});
+
 describe('utcDate', () => {
   test('zero-pads day and month', () => {
     assert.deepEqual(

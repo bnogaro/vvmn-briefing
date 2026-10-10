@@ -79,6 +79,15 @@
   // Flight levels are used as ceilings: round down to stay below them.
   const floorTo5 = (metres) => Math.floor(metres / 5) * 5;
 
+  // QNH (hPa) of a decoded checkwx METAR; throws when there is none.
+  function qnhFromMetar(body) {
+    const qnh = Number(body?.data?.[0]?.barometer?.mb);
+    if (!(qnh >= 900 && qnh <= 1100)) {
+      throw new Error(`no usable QNH in METAR: ${JSON.stringify(body)}`);
+    }
+    return qnh;
+  }
+
   const sunsetUrl = () => `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&date=today&tzid=europe/paris`;
   const metarUrl = () => `https://api.checkwx.com/metar/${METAR_AIRPORT}/decoded?x-api-key=${CHECKWX_API_KEY}`;
 
@@ -124,15 +133,17 @@
     }
   }
 
+  // Without a QNH the table keeps its dashes: a stale altitude is worse than none.
   async function showFlightLevels(document) {
     const cell = (id) => document.getElementById(id);
-    let body;
+    let qnh;
     try {
-      body = await fetchJson(metarUrl());
+      qnh = qnhFromMetar(await fetchJson(metarUrl()));
     } catch (error) {
-      console.error('There was a problem with the fetch operation:', error);
+      console.error('Could not fetch the QNH:', error);
+      cell('qnh').textContent = 'indisponible';
+      return;
     }
-    const qnh = body.data[0].barometer.mb;
     console.log(`Fetched QNH from METAR at api.checkwx.com: ${qnh}`);
     cell('qnh').textContent = String(qnh);
     cell('delta').textContent = String(Math.round(qnhDelta(qnh)));
@@ -150,6 +161,7 @@
     flightLevelAltitude,
     qnhDelta,
     floorTo5,
+    qnhFromMetar,
     render,
     showSunset,
     showFlightLevels,
