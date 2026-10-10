@@ -141,13 +141,15 @@ describe('flight level table', () => {
     assert.ok(url.searchParams.get('x-api-key'), 'API key is sent');
   });
 
-  // delta = (QNH - 1013.25) * 8.5344 m/hPa (28 ft/hPa), rounded to the metre;
-  // altitude = FL in metres (1981 / 3505 / 5944) + delta, rounded UP to 5 m.
+  // Expected values solved independently from the ISA barometric formula
+  // p(h) = QNH * (1 - 0.0065 h / 288.15) ^ 5.25588: the altitude where the
+  // pressure equals that of the flight level, rounded DOWN to 5 m (ceilings).
+  // Delta is the altitude of the 1013.25 hPa surface, rounded to the metre.
   const cases = [
-    { qnh: 1013, delta: '-2', fl65: '1980', fl115: '3505', fl195: '5945' },
-    { qnh: 1020, delta: '58', fl65: '2040', fl115: '3565', fl195: '6005' },
-    { qnh: 1030, delta: '143', fl65: '2125', fl115: '3650', fl195: '6090' },
-    { qnh: 995, delta: '-156', fl65: '1825', fl115: '3350', fl195: '5790' },
+    { qnh: 1013, delta: '-2', fl65: '1975', fl115: '3500', fl195: '5940' },
+    { qnh: 1020, delta: '56', fl65: '2030', fl115: '3555', fl195: '5990' },
+    { qnh: 1030, delta: '138', fl65: '2110', fl115: '3630', fl195: '6060' },
+    { qnh: 995, delta: '-154', fl65: '1830', fl115: '3360', fl195: '5810' },
   ];
   for (const { qnh, ...expected } of cases) {
     test(`QNH ${qnh} hPa gives FL65 ${expected.fl65} m, FL115 ${expected.fl115} m, FL195 ${expected.fl195} m`, async (t) => {

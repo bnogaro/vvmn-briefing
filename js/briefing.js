@@ -13,6 +13,8 @@
   const CHECKWX_API_KEY = '52fa72e59d364463b44cfa4ec3';
   const METAR_AIRPORT = 'LFCK';
 
+  const FLIGHT_LEVELS = [65, 115, 195];
+
   const pad2 = (n) => String(n).padStart(2, '0');
 
   // Date parts in UTC, as used by the forecast providers.
@@ -55,10 +57,27 @@
 
   const meteoParapenteUrl = () => `https://meteo-parapente.com/#/${LAT},${LON},7`;
 
-  // Flight levels in metres, shifted by 28 ft (8.5344 m) per hPa of QNH.
-  const FLIGHT_LEVEL_METRES = { 65: 1981, 115: 3505, 195: 5944 };
-  const METRES_PER_HPA = 8.5344;
-  const round5 = (metres) => Math.ceil(metres / 5) * 5;
+  // Flight levels are pressure surfaces of the ICAO standard atmosphere.
+  // An altimeter set to QNH reads, at the surface of pressure p:
+  //   h = T0 / L * (1 - (p / QNH) ^ (R L / g))
+  const ISA_T0 = 288.15; // K
+  const ISA_LAPSE = 0.0065; // K/m
+  const ISA_EXPONENT = 0.190263; // R L / g
+  const ISA_P0 = 1013.25; // hPa
+  const FOOT = 0.3048; // m
+
+  const pressureAtFlightLevel = (fl) =>
+    ISA_P0 * Math.pow(1 - (ISA_LAPSE * fl * 100 * FOOT) / ISA_T0, 1 / ISA_EXPONENT);
+  const altitudeOnQnh = (pressure, qnh) => (ISA_T0 / ISA_LAPSE) * (1 - Math.pow(pressure / qnh, ISA_EXPONENT));
+
+  // Altitude (m) at which the altimeter, set to QNH, reaches flight level `fl`.
+  const flightLevelAltitude = (fl, qnh) => altitudeOnQnh(pressureAtFlightLevel(fl), qnh);
+
+  // Altitude (m) of the 1013.25 hPa surface: QNH altitude minus pressure altitude near the ground.
+  const qnhDelta = (qnh) => altitudeOnQnh(ISA_P0, qnh);
+
+  // Flight levels are used as ceilings: round down to stay below them.
+  const floorTo5 = (metres) => Math.floor(metres / 5) * 5;
 
   const sunsetUrl = () => `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&date=today&tzid=europe/paris`;
   const metarUrl = () => `https://api.checkwx.com/metar/${METAR_AIRPORT}/decoded?x-api-key=${CHECKWX_API_KEY}`;
@@ -116,10 +135,9 @@
     const qnh = body.data[0].barometer.mb;
     console.log(`Fetched QNH from METAR at api.checkwx.com: ${qnh}`);
     cell('qnh').textContent = String(qnh);
-    const delta = ((qnh - 1013.25) * METRES_PER_HPA).toFixed(0);
-    cell('delta').textContent = delta;
-    for (const [fl, metres] of Object.entries(FLIGHT_LEVEL_METRES)) {
-      cell(`fl${fl}`).textContent = String(round5(+delta + metres));
+    cell('delta').textContent = String(Math.round(qnhDelta(qnh)));
+    for (const fl of FLIGHT_LEVELS) {
+      cell(`fl${fl}`).textContent = String(floorTo5(flightLevelAltitude(fl, qnh)));
     }
   }
 
@@ -129,6 +147,9 @@
     knmiFrontUrl,
     lameteoTomorrowUrl,
     windyUrl,
+    flightLevelAltitude,
+    qnhDelta,
+    floorTo5,
     render,
     showSunset,
     showFlightLevels,
