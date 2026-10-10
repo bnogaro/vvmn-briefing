@@ -27,20 +27,20 @@
       <!-- un slide -->
       <section>
         <h4>Prévision Front à 12H</h4>
-        <img id="front-today" alt="Carte des fronts à 12H" style="height:620px">
+        <img id="front-today" class="chart" alt="Carte des fronts à 12H">
       </section>
       <!-- un slide -->
       <section data-autoslide="11000">
         <h4>Satellite visible France</h4>
-        <iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
-          src="https://widgets.meteox.com/fr-FR/widgets/radar/country/fr/satellite" style="width: 620px; height: 620px;"
+        <iframe class="radar" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+          src="https://widgets.meteox.com/fr-FR/widgets/radar/country/fr/satellite"
           scrolling="no" frameborder="0"></iframe>
       </section>
       <!-- un slide -->
       <section>
         <h4>Radar pluie</h4>
-        <iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
-          src="https://widgets.meteox.com/fr-FR/widgets/radar/country/fr/rain" style="width: 620px; height: 620px;"
+        <iframe class="radar" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+          src="https://widgets.meteox.com/fr-FR/widgets/radar/country/fr/rain"
           scrolling="no" frameborder="0"></iframe>
       </section>
       <!-- un slide -->
@@ -110,40 +110,38 @@
       <!-- un tableau des FL du jour en fonction du QNH, et l'heure de coucher du soleil -->
       <section>
         <h4>Table des Niveaux de Vol</h4>
-        <div class="div_qnh" style="height:fit-content;">
-          <div style="display:block; ">
-            <table class="alti">
-              <tbody>
-                <tr>
-                  <th>QNH</th>
-                  <th class="centre" id="qnh">—</th>
-                  <th>FL</th>
-                  <th class="centre">Altitude du jour</th>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td>65</td>
-                  <td class="centre" data-fl="65">—</td>
-                </tr>
-                <tr>
-                  <td>Delta</td>
-                  <td id="delta">—</td>
-                  <td>115</td>
-                  <td class="centre" data-fl="115">—</td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td>195</td>
-                  <td class="centre" data-fl="195">—</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div style="display:block; margin:10px; text-align:left">
+        <div class="fl-panel">
+          <table class="fl-table">
+            <tbody>
+              <tr>
+                <th>QNH</th>
+                <th class="centre" id="qnh">—</th>
+                <th>FL</th>
+                <th class="centre">Altitude du jour</th>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td>65</td>
+                <td class="centre" data-fl="65">—</td>
+              </tr>
+              <tr>
+                <td>Delta</td>
+                <td id="delta">—</td>
+                <td>115</td>
+                <td class="centre" data-fl="115">—</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td>195</td>
+                <td class="centre" data-fl="195">—</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="fl-notes">
             <p id="sunsetDisplay"></p>
-            <p>Fin des vols : <input type="text" id="fdv" class="big_input_qnh"><br>
+            <p>Fin des vols : <input type="text" id="fdv" class="end-of-flights"><br>
               <small>nuit aéronautique : coucher du soleil + 30 min</small></p>
           </div>
         </div>
@@ -154,15 +152,15 @@
       </section>
       <section>
         <h4>Prévision Front à 0H UTC J+1</h4>
-        <img id="front-tomorrow" alt="Carte des fronts à 0H UTC J+1" style="height:620px;">
+        <img id="front-tomorrow" class="chart" alt="Carte des fronts à 0H UTC J+1">
       </section>
       <section>
         <h4>Prévisions à 24h</h4>
-        <img id="forecast-tomorrow" alt="Prévisions à 24h" style="height:620px">
+        <img id="forecast-tomorrow" class="chart" alt="Prévisions à 24h">
       </section>
       <section>
         <h2>Bons vols</h2>
-        <img src="https://vvmn.fr/assets/images/canon-eos-40d-3888x2592-594514-2000x1333.jpg" style="height:480px">
+        <img class="photo" src="https://vvmn.fr/assets/images/canon-eos-40d-3888x2592-594514-2000x1333.jpg">
       </section>
     </div>
   </div>

@@ -113,7 +113,6 @@
       const item = document.createElement('li');
       const img = document.createElement('img');
       img.src = url;
-      img.style.cssText = 'height:600px; text-align:center;';
       item.appendChild(img);
       gallery.appendChild(item);
     }
