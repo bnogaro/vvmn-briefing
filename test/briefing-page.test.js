@@ -1,8 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadBriefing, jsonResponse, defaultFetch, metarWithQnh, visibleText } from './helpers/briefing-page.js';
+import { loadBriefing, jsonResponse, defaultFetch, metarWithQnh } from './helpers/briefing-page.js';
 
-// La Montagne Noire (LFMG), as declared in index.html.
+// La Montagne Noire (LFMG), as declared in js/briefing.js.
 const LAT = '43.4063889';
 const LON = '1.9891666666666667';
 
@@ -16,9 +16,10 @@ const imageSources = (document, prefix) =>
   [...document.querySelectorAll(`img[src^="${prefix}"]`)].map((img) => img.getAttribute('src'));
 
 describe('page load', () => {
-  test('runs every inline script without uncaught errors', async (t) => {
+  test('runs every script without uncaught errors', async (t) => {
     const page = await withPage(t);
     assert.deepEqual(page.uncaughtErrors, []);
+    assert.deepEqual(page.consoleErrors, []);
   });
 
   test('requests no missing local file', async (t) => {
@@ -37,7 +38,7 @@ describe('page load', () => {
 describe('date-dependent content', () => {
   test('title slide shows the UTC date as DD/MM/YYYY', async (t) => {
     const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
-    assert.equal(visibleText(document.querySelector('medium')), 'Montagne Noire 06/03/2024');
+    assert.equal(document.querySelector('section p').textContent, 'Montagne Noire 06/03/2024');
   });
 
   test('rain gallery shows 07h to 18h of the day\'s 00Z AROME run for south-west France', async (t) => {
@@ -46,10 +47,8 @@ describe('date-dependent content', () => {
       { length: 12 },
       (_, i) => `https://modeles7.meteociel.fr/modeles/arome/runs/2024030600/aromehd-1-${i + 7}-3.png`,
     );
-    // jsdom inserts successive document.write() calls in reverse order, so
-    // only the set of frames is checked here, not their sequence.
     const frames = [...document.querySelectorAll('ul.gallery li img')].map((img) => img.getAttribute('src'));
-    assert.deepEqual(frames.sort(), expected.sort());
+    assert.deepEqual(frames, expected);
   });
 
   test('front map shows today 12h and tomorrow 00h from KNMI', async (t) => {

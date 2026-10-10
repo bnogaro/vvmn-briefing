@@ -122,10 +122,3 @@ export async function loadBriefing({ now = '2024-03-06T12:00:00Z', fetch = defau
     close: () => window.close(),
   };
 }
-
-// Text content of an element, ignoring the source of inline <script>s.
-export function visibleText(element) {
-  const clone = element.cloneNode(true);
-  clone.querySelectorAll('script').forEach((script) => script.remove());
-  return clone.textContent.replace(/\s+/g, ' ').trim();
-}
