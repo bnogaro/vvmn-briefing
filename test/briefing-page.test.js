@@ -119,6 +119,20 @@ describe('maps centred on the airfield', () => {
     const iframe = document.querySelector('iframe[src^="https://meteo-parapente.com/"]');
     assert.equal(iframe.getAttribute('src'), `https://meteo-parapente.com/#/${LAT},${LON},7`);
   });
+
+  test('Meteociel soundings cover the airfield and Albi, 6 hours into the AROME run', async (t) => {
+    const { document } = await withPage(t);
+    const soundings = [...document.querySelectorAll('iframe[src^="https://www.meteociel.fr/modeles/sondage2arome.php"]')].map(
+      (iframe) => new URL(iframe.getAttribute('src')).searchParams,
+    );
+    assert.deepEqual(
+      soundings.map((params) => [params.get('lat'), params.get('lon'), params.get('ech')]),
+      [
+        [LAT, LON, '6'],
+        ['43.9004', '1.972', '6'],
+      ],
+    );
+  });
 });
 
 describe('sunset', () => {
@@ -175,15 +189,18 @@ describe('flight level table', () => {
     assert.ok(url.searchParams.get('x-api-key'), 'API key is sent');
   });
 
+  // QNH, delta and the altitude of each level, as shown in the table.
+  const table = (document) => ({
+    qnh: document.getElementById('qnh').textContent,
+    delta: document.getElementById('delta').textContent,
+    levels: Object.fromEntries([...document.querySelectorAll('[data-fl]')].map((cell) => [cell.dataset.fl, cell.textContent])),
+  });
+
   // The altitudes themselves are checked in flight-levels.test.js.
   test('fills the table from the METAR QNH', async (t) => {
     const fetch = (url) => (url.includes('checkwx') ? jsonResponse(metarWithQnh(1030)) : defaultFetch(url));
     const { document } = await withPage(t, { fetch });
-    const cell = (id) => document.getElementById(id).textContent;
-    assert.deepEqual(
-      { qnh: cell('qnh'), delta: cell('delta'), fl65: cell('fl65'), fl115: cell('fl115'), fl195: cell('fl195') },
-      { qnh: '1030', delta: '138', fl65: '2110', fl115: '3630', fl195: '6060' },
-    );
+    assert.deepEqual(table(document), { qnh: '1030', delta: '138', levels: { 65: '2110', 115: '3630', 195: '6060' } });
   });
 
   const failures = {
@@ -199,10 +216,11 @@ describe('flight level table', () => {
     test(`shows no altitude when ${failure}`, async (t) => {
       const fetch = (url) => (url.includes('checkwx') ? checkwx() : defaultFetch(url));
       const page = await withPage(t, { fetch });
-      assert.equal(page.document.getElementById('qnh').textContent, 'indisponible');
-      for (const id of ['delta', 'fl65', 'fl115', 'fl195']) {
-        assert.equal(page.document.getElementById(id).textContent, '—', `#${id}`);
-      }
+      assert.deepEqual(table(page.document), {
+        qnh: 'indisponible',
+        delta: '—',
+        levels: { 65: '—', 115: '—', 195: '—' },
+      });
       assert.equal(page.consoleErrors.length, 1);
       assert.deepEqual(page.uncaughtErrors, []);
     });

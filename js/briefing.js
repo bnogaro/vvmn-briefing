@@ -13,7 +13,8 @@
   const CHECKWX_API_KEY = '52fa72e59d364463b44cfa4ec3';
   const METAR_AIRPORT = 'LFCK';
 
-  const FLIGHT_LEVELS = [65, 115, 195];
+  // Places of the modelled soundings, as named by data-sounding in index.html.
+  const SOUNDINGS = { airfield: [LAT, LON], albi: ['43.9004', '1.972'] };
 
   const pad2 = (n) => String(n).padStart(2, '0');
 
@@ -57,6 +58,10 @@
 
   const meteoParapenteUrl = () => `https://meteo-parapente.com/#/${LAT},${LON},7`;
 
+  // Meteociel AROME sounding, 6 hours into the run.
+  const soundingUrl = ([lat, lon]) =>
+    `https://www.meteociel.fr/modeles/sondage2arome.php?archive=0&ech=6&map=1&wrf=0&region=&type=1&lat=${lat}&lon=${lon}`;
+
   // QNH (hPa) of a decoded checkwx METAR; throws when there is none.
   function qnhFromMetar(body) {
     const qnh = Number(body?.data?.[0]?.barometer?.mb);
@@ -99,6 +104,9 @@
     document.querySelectorAll('iframe[data-windy-level]').forEach((iframe) => {
       iframe.src = windyUrl(iframe.dataset.windyLevel);
     });
+    document.querySelectorAll('iframe[data-sounding]').forEach((iframe) => {
+      iframe.src = soundingUrl(SOUNDINGS[iframe.dataset.sounding]);
+    });
 
     const gallery = document.getElementById('rain-forecast');
     for (const url of aromeRainUrls(now)) {
@@ -139,9 +147,10 @@
     console.log(`Fetched QNH from METAR at api.checkwx.com: ${qnh}`);
     cell('qnh').textContent = String(qnh);
     cell('delta').textContent = String(FlightLevels.delta(qnh));
-    for (const fl of FLIGHT_LEVELS) {
-      cell(`fl${fl}`).textContent = String(FlightLevels.altitude(fl, qnh));
-    }
+    // The table lists the levels: one cell per level, marked data-fl="115".
+    document.querySelectorAll('[data-fl]').forEach((levelCell) => {
+      levelCell.textContent = String(FlightLevels.altitude(Number(levelCell.dataset.fl), qnh));
+    });
   }
 
   // Fills the page for `now`: the forecast charts at once, the sunset and the
