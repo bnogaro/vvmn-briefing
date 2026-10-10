@@ -1,0 +1,15 @@
+{
+  "name": "vvmn-briefing",
+  "private": true,
+  "type": "module",
+  "description": "Briefing vol planeur - collecte automatique de données météo et aéro",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.2"
+  }
+}

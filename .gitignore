@@ -22,3 +22,5 @@
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudioc
+# Node (test suite)
+node_modules/
