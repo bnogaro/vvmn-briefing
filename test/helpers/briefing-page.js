@@ -16,18 +16,17 @@ import { JSDOM, VirtualConsole, requestInterceptor } from 'jsdom';
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ORIGIN = 'https://briefing.test/';
 
-export const REVEAL_STUB = `
+// Records the options and starts the plugins like reveal.js; emit() fires deck events.
+const REVEAL_STUB = `
 window.Reveal = {
   initOptions: null,
-  configured: [],
-  autoSlideToggles: 0,
   listeners: {},
-  currentSlide: null,
-  initialize(options) { this.initOptions = options; },
-  configure(options) { this.configured.push(options); },
-  toggleAutoSlide() { this.autoSlideToggles++; },
-  addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn); },
-  getCurrentSlide() { return this.currentSlide; },
+  initialize(options) {
+    this.initOptions = options;
+    (options.plugins || []).forEach((plugin) => plugin.init(this));
+  },
+  on(type, fn) { (this.listeners[type] ||= []).push(fn); },
+  emit(type, event) { (this.listeners[type] || []).forEach((fn) => fn(event)); },
 };`;
 
 const CONTENT_TYPES = { '.js': 'application/javascript', '.css': 'text/css', '.html': 'text/html' };

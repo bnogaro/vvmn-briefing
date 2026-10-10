@@ -205,11 +205,10 @@ describe('gallery wiring', () => {
   test('the rain gallery starts when its slide is shown', async (t) => {
     const { document, reveal } = await withPage(t);
     const gallery = document.querySelector('ul.gallery');
-    const [onSlideChanged] = reveal.listeners.slidechanged;
-    onSlideChanged({ previousSlide: document.querySelector('section'), currentSlide: gallery.closest('section') });
+    const title = document.querySelector('section');
+    reveal.emit('slidechanged', { previousSlide: title, currentSlide: gallery.closest('section') });
     const states = [...gallery.querySelectorAll('li')].map((li) => li.className);
-    assert.equal(states.filter((state) => state === 'active').length, 1);
-    assert.equal(states.filter((state) => state === 'inactive').length, 11);
-    onSlideChanged({ previousSlide: gallery.closest('section'), currentSlide: document.querySelector('section') });
+    assert.deepEqual(states, ['active', ...Array(11).fill('inactive')]);
+    reveal.emit('slidechanged', { previousSlide: gallery.closest('section'), currentSlide: title });
   });
 });
