@@ -1,0 +1,44 @@
+# Monthly version updates for the tooling. None of these dependencies ship to
+# the site, and security updates are separate and immediate.
+#
+# reveal.js is left out on purpose: for a git submodule, Dependabot proposes
+# the head of its branch (reveal.js master, unreleased code), which GitHub
+# Pages would publish as soon as the PR is merged. Update it by hand to a
+# release tag instead; see the README.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      npm:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
