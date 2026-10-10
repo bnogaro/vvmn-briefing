@@ -156,28 +156,16 @@ describe('flight level table', () => {
     assert.ok(url.searchParams.get('x-api-key'), 'API key is sent');
   });
 
-  // Expected values solved independently from the ISA barometric formula
-  // p(h) = QNH * (1 - 0.0065 h / 288.15) ^ 5.25588: the altitude where the
-  // pressure equals that of the flight level, rounded DOWN to 5 m (ceilings).
-  // Delta is the altitude of the 1013.25 hPa surface, rounded to the metre.
-  const cases = [
-    { qnh: 1013, delta: '-2', fl65: '1975', fl115: '3500', fl195: '5940' },
-    { qnh: 1020, delta: '56', fl65: '2030', fl115: '3555', fl195: '5990' },
-    { qnh: 1030, delta: '138', fl65: '2110', fl115: '3630', fl195: '6060' },
-    { qnh: 995, delta: '-154', fl65: '1830', fl115: '3360', fl195: '5810' },
-  ];
-  for (const { qnh, ...expected } of cases) {
-    test(`QNH ${qnh} hPa gives FL65 ${expected.fl65} m, FL115 ${expected.fl115} m, FL195 ${expected.fl195} m`, async (t) => {
-      const fetch = (url) => (url.includes('checkwx') ? jsonResponse(metarWithQnh(qnh)) : defaultFetch(url));
-      const { document } = await withPage(t, { fetch });
-      const cell = (id) => document.getElementById(id).textContent;
-      assert.equal(cell('qnh'), String(qnh));
-      assert.deepEqual(
-        { delta: cell('delta'), fl65: cell('fl65'), fl115: cell('fl115'), fl195: cell('fl195') },
-        expected,
-      );
-    });
-  }
+  // The altitudes themselves are checked in flight-levels.test.js.
+  test('fills the table from the METAR QNH', async (t) => {
+    const fetch = (url) => (url.includes('checkwx') ? jsonResponse(metarWithQnh(1030)) : defaultFetch(url));
+    const { document } = await withPage(t, { fetch });
+    const cell = (id) => document.getElementById(id).textContent;
+    assert.deepEqual(
+      { qnh: cell('qnh'), delta: cell('delta'), fl65: cell('fl65'), fl115: cell('fl115'), fl195: cell('fl195') },
+      { qnh: '1030', delta: '138', fl65: '2110', fl115: '3630', fl195: '6060' },
+    );
+  });
 
   const failures = {
     'the METAR request fails': () => {

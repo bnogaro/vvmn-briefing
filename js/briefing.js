@@ -57,28 +57,6 @@
 
   const meteoParapenteUrl = () => `https://meteo-parapente.com/#/${LAT},${LON},7`;
 
-  // Flight levels are pressure surfaces of the ICAO standard atmosphere.
-  // An altimeter set to QNH reads, at the surface of pressure p:
-  //   h = T0 / L * (1 - (p / QNH) ^ (R L / g))
-  const ISA_T0 = 288.15; // K
-  const ISA_LAPSE = 0.0065; // K/m
-  const ISA_EXPONENT = 0.190263; // R L / g
-  const ISA_P0 = 1013.25; // hPa
-  const FOOT = 0.3048; // m
-
-  const pressureAtFlightLevel = (fl) =>
-    ISA_P0 * Math.pow(1 - (ISA_LAPSE * fl * 100 * FOOT) / ISA_T0, 1 / ISA_EXPONENT);
-  const altitudeOnQnh = (pressure, qnh) => (ISA_T0 / ISA_LAPSE) * (1 - Math.pow(pressure / qnh, ISA_EXPONENT));
-
-  // Altitude (m) at which the altimeter, set to QNH, reaches flight level `fl`.
-  const flightLevelAltitude = (fl, qnh) => altitudeOnQnh(pressureAtFlightLevel(fl), qnh);
-
-  // Altitude (m) of the 1013.25 hPa surface: QNH altitude minus pressure altitude near the ground.
-  const qnhDelta = (qnh) => altitudeOnQnh(ISA_P0, qnh);
-
-  // Flight levels are used as ceilings: round down to stay below them.
-  const floorTo5 = (metres) => Math.floor(metres / 5) * 5;
-
   // QNH (hPa) of a decoded checkwx METAR; throws when there is none.
   function qnhFromMetar(body) {
     const qnh = Number(body?.data?.[0]?.barometer?.mb);
@@ -160,9 +138,9 @@
     }
     console.log(`Fetched QNH from METAR at api.checkwx.com: ${qnh}`);
     cell('qnh').textContent = String(qnh);
-    cell('delta').textContent = String(Math.round(qnhDelta(qnh)));
+    cell('delta').textContent = String(FlightLevels.delta(qnh));
     for (const fl of FLIGHT_LEVELS) {
-      cell(`fl${fl}`).textContent = String(floorTo5(flightLevelAltitude(fl, qnh)));
+      cell(`fl${fl}`).textContent = String(FlightLevels.altitude(fl, qnh));
     }
   }
 
@@ -172,9 +150,6 @@
     knmiFrontUrl,
     lameteoTomorrowUrl,
     windyUrl,
-    flightLevelAltitude,
-    qnhDelta,
-    floorTo5,
     qnhFromMetar,
     parisTime,
     endOfFlights,
