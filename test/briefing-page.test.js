@@ -1,4 +1,4 @@
-import { test, describe } from 'node:test';
+import { test, describe, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadBriefing, jsonResponse, defaultFetch, metarWithQnh } from './helpers/briefing-page.js';
 
@@ -12,30 +12,36 @@ async function withPage(t, options) {
   return page;
 }
 
+// One page with the default date (2024-03-06, noon UTC) and API answers, shared
+// by the tests that only read it: each page load builds a whole jsdom window.
+let sharedPage;
+const defaultPage = () => (sharedPage ??= loadBriefing());
+after(async () => (await sharedPage)?.close());
+
 const imageSources = (document, prefix) =>
   [...document.querySelectorAll(`img[src^="${prefix}"]`)].map((img) => img.getAttribute('src'));
 
 describe('page load', () => {
-  test('runs every script without uncaught errors', async (t) => {
-    const page = await withPage(t);
+  test('runs every script without uncaught errors', async () => {
+    const page = await defaultPage();
     assert.deepEqual(page.uncaughtErrors, []);
     assert.deepEqual(page.consoleErrors, []);
   });
 
-  test('requests no missing local file', async (t) => {
-    const page = await withPage(t);
+  test('requests no missing local file', async () => {
+    const page = await defaultPage();
     assert.deepEqual(page.missingFiles, []);
   });
 
-  test('starts reveal.js as a looping, auto-advancing kiosk', async (t) => {
-    const { reveal } = await withPage(t);
+  test('starts reveal.js as a looping, auto-advancing kiosk', async () => {
+    const { reveal } = await defaultPage();
     assert.equal(reveal.initOptions.loop, true);
     assert.equal(reveal.initOptions.history, false);
     assert.equal(reveal.initOptions.autoSlide, 20000);
   });
 
-  test('keeps every slide on screen for at least 5 seconds', async (t) => {
-    const { document } = await withPage(t);
+  test('keeps every slide on screen for at least 5 seconds', async () => {
+    const { document } = await defaultPage();
     for (const slide of document.querySelectorAll('section[data-autoslide]')) {
       const title = slide.querySelector('h2, h4')?.textContent;
       assert.ok(Number(slide.dataset.autoslide) >= 5000, `${title}: ${slide.dataset.autoslide} ms`);
@@ -44,13 +50,18 @@ describe('page load', () => {
 });
 
 describe('date-dependent content', () => {
-  test('title slide shows the UTC date as DD/MM/YYYY', async (t) => {
-    const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
+  test('title slide shows the UTC date as DD/MM/YYYY', async () => {
+    const { document } = await defaultPage();
     assert.equal(document.querySelector('section p').textContent, 'Montagne Noire 06/03/2024');
   });
 
-  test('rain gallery shows 07h to 18h of the day\'s 00Z AROME run for south-west France', async (t) => {
-    const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
+  test('title slide uses the UTC calendar day', async (t) => {
+    const { document } = await withPage(t, { now: '2024-01-05T23:30:00-02:00' });
+    assert.equal(document.querySelector('section p').textContent, 'Montagne Noire 06/01/2024');
+  });
+
+  test('rain gallery shows 07h to 18h of the day\'s 00Z AROME run for south-west France', async () => {
+    const { document } = await defaultPage();
     const expected = Array.from(
       { length: 12 },
       (_, i) => `https://modeles7.meteociel.fr/modeles/arome/runs/2024030600/aromehd-1-${i + 7}-3.png`,
@@ -59,8 +70,8 @@ describe('date-dependent content', () => {
     assert.deepEqual(frames, expected);
   });
 
-  test('front map shows today 12h and tomorrow 00h from KNMI', async (t) => {
-    const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
+  test('front map shows today 12h and tomorrow 00h from KNMI', async () => {
+    const { document } = await defaultPage();
     const base = 'https://cdn.knmi.nl/knmi/map/page/weer/waarschuwingen_verwachtingen/weerkaarten/';
     assert.deepEqual(imageSources(document, base), [`${base}PL0612_large.gif`, `${base}PL0700_large.gif`]);
   });
@@ -93,8 +104,8 @@ describe('date-dependent content', () => {
 });
 
 describe('maps centred on the airfield', () => {
-  test('Windy wind maps cover surface, 900, 800 and 600 hPa with AROME', async (t) => {
-    const { document } = await withPage(t);
+  test('Windy wind maps cover surface, 900, 800 and 600 hPa with AROME', async () => {
+    const { document } = await defaultPage();
     const maps = [...document.querySelectorAll('iframe[src^="https://embed.windy.com/"]')].map(
       (iframe) => new URL(iframe.getAttribute('src')).searchParams,
     );
@@ -109,16 +120,30 @@ describe('maps centred on the airfield', () => {
     }
   });
 
-  test('Meteo-parapente is centred on the airfield', async (t) => {
-    const { document } = await withPage(t);
+  test('Meteo-parapente is centred on the airfield', async () => {
+    const { document } = await defaultPage();
     const iframe = document.querySelector('iframe[src^="https://meteo-parapente.com/"]');
     assert.equal(iframe.getAttribute('src'), `https://meteo-parapente.com/#/${LAT},${LON},7`);
+  });
+
+  test('Meteociel soundings cover the airfield and Albi, 6 hours into the AROME run', async () => {
+    const { document } = await defaultPage();
+    const soundings = [...document.querySelectorAll('iframe[src^="https://www.meteociel.fr/modeles/sondage2arome.php"]')].map(
+      (iframe) => new URL(iframe.getAttribute('src')).searchParams,
+    );
+    assert.deepEqual(
+      soundings.map((params) => [params.get('lat'), params.get('lon'), params.get('ech')]),
+      [
+        [LAT, LON, '6'],
+        ['43.9004', '1.972', '6'],
+      ],
+    );
   });
 });
 
 describe('sunset', () => {
-  test('requests today\'s sunset at the airfield as an ISO timestamp', async (t) => {
-    const { fetchCalls } = await withPage(t);
+  test('requests today\'s sunset at the airfield as an ISO timestamp', async () => {
+    const { fetchCalls } = await defaultPage();
     const url = new URL(fetchCalls.find((call) => call.startsWith('https://api.sunrise-sunset.org/')));
     assert.equal(url.pathname, '/json');
     assert.equal(url.searchParams.get('lat'), LAT);
@@ -128,56 +153,61 @@ describe('sunset', () => {
     assert.equal(url.searchParams.get('formatted'), '0');
   });
 
-  test('displays the sunset in Paris time, 24h format', async (t) => {
-    const { document } = await withPage(t);
+  test('displays the sunset in Paris time, 24h format', async () => {
+    const { document } = await defaultPage();
     assert.equal(document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : 19:15');
   });
 
-  test('fills in the end of flights 30 minutes after sunset, at aeronautical night', async (t) => {
-    const { document } = await withPage(t);
+  test('fills in the end of flights 30 minutes after sunset, at aeronautical night', async () => {
+    const { document } = await defaultPage();
     assert.equal(document.getElementById('fdv').value, '19:45');
   });
 
-  test('says the sunset is unavailable and logs when the API fails', async (t) => {
-    const fetch = (url) => (url.includes('sunrise-sunset') ? jsonResponse({}, 500) : defaultFetch(url));
-    const page = await withPage(t, { fetch });
-    assert.equal(page.document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : indisponible');
-    assert.equal(page.document.getElementById('fdv').value, '', 'end of flights left for the briefer');
-    assert.equal(page.consoleErrors.length, 1);
-    assert.deepEqual(page.uncaughtErrors, []);
+  test('uses Paris summer time for the sunset and the end of flights', async (t) => {
+    const sunset = { results: { sunset: '2024-06-21T21:58:12+02:00' }, status: 'OK' };
+    const fetch = (url) => (url.includes('sunrise-sunset') ? jsonResponse(sunset) : defaultFetch(url));
+    const { document } = await withPage(t, { now: '2024-06-21T12:00:00Z', fetch });
+    assert.equal(document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : 21:58');
+    assert.equal(document.getElementById('fdv').value, '22:28');
   });
+
+  const failures = {
+    'the API fails': () => jsonResponse({}, 500),
+    'the API answers without a sunset': () => jsonResponse({ results: {}, status: 'OK' }),
+  };
+  for (const [failure, sunriseSunset] of Object.entries(failures)) {
+    test(`says the sunset is unavailable and logs when ${failure}`, async (t) => {
+      const fetch = (url) => (url.includes('sunrise-sunset') ? sunriseSunset() : defaultFetch(url));
+      const page = await withPage(t, { fetch });
+      assert.equal(page.document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : indisponible');
+      assert.equal(page.document.getElementById('fdv').value, '', 'end of flights left for the briefer');
+      assert.equal(page.consoleErrors.length, 1);
+      assert.deepEqual(page.uncaughtErrors, []);
+    });
+  }
 });
 
 describe('flight level table', () => {
-  test('requests the decoded METAR of Castres (LFCK)', async (t) => {
-    const { fetchCalls } = await withPage(t);
+  test('requests the decoded METAR of Castres (LFCK)', async () => {
+    const { fetchCalls } = await defaultPage();
     const url = new URL(fetchCalls.find((call) => call.startsWith('https://api.checkwx.com/')));
     assert.equal(url.pathname, '/metar/LFCK/decoded');
     assert.ok(url.searchParams.get('x-api-key'), 'API key is sent');
   });
 
-  // Expected values solved independently from the ISA barometric formula
-  // p(h) = QNH * (1 - 0.0065 h / 288.15) ^ 5.25588: the altitude where the
-  // pressure equals that of the flight level, rounded DOWN to 5 m (ceilings).
-  // Delta is the altitude of the 1013.25 hPa surface, rounded to the metre.
-  const cases = [
-    { qnh: 1013, delta: '-2', fl65: '1975', fl115: '3500', fl195: '5940' },
-    { qnh: 1020, delta: '56', fl65: '2030', fl115: '3555', fl195: '5990' },
-    { qnh: 1030, delta: '138', fl65: '2110', fl115: '3630', fl195: '6060' },
-    { qnh: 995, delta: '-154', fl65: '1830', fl115: '3360', fl195: '5810' },
-  ];
-  for (const { qnh, ...expected } of cases) {
-    test(`QNH ${qnh} hPa gives FL65 ${expected.fl65} m, FL115 ${expected.fl115} m, FL195 ${expected.fl195} m`, async (t) => {
-      const fetch = (url) => (url.includes('checkwx') ? jsonResponse(metarWithQnh(qnh)) : defaultFetch(url));
-      const { document } = await withPage(t, { fetch });
-      const cell = (id) => document.getElementById(id).textContent;
-      assert.equal(cell('qnh'), String(qnh));
-      assert.deepEqual(
-        { delta: cell('delta'), fl65: cell('fl65'), fl115: cell('fl115'), fl195: cell('fl195') },
-        expected,
-      );
-    });
-  }
+  // QNH, delta and the altitude of each level, as shown in the table.
+  const table = (document) => ({
+    qnh: document.getElementById('qnh').textContent,
+    delta: document.getElementById('delta').textContent,
+    levels: Object.fromEntries([...document.querySelectorAll('[data-fl]')].map((cell) => [cell.dataset.fl, cell.textContent])),
+  });
+
+  // The altitudes themselves are checked in flight-levels.test.js.
+  test('fills the table from the METAR QNH', async (t) => {
+    const fetch = (url) => (url.includes('checkwx') ? jsonResponse(metarWithQnh(1030)) : defaultFetch(url));
+    const { document } = await withPage(t, { fetch });
+    assert.deepEqual(table(document), { qnh: '1030', delta: '138', levels: { 65: '2110', 115: '3630', 195: '6060' } });
+  });
 
   const failures = {
     'the METAR request fails': () => {
@@ -185,16 +215,18 @@ describe('flight level table', () => {
     },
     'the METAR API answers an error': () => jsonResponse({ error: 'Unauthorized' }, 401),
     'the METAR has no observation': () => jsonResponse({ results: 0, data: [] }),
+    'the METAR has no barometer': () => jsonResponse({ results: 1, data: [{ icao: 'LFCK' }] }),
     'the METAR QNH is implausible': () => jsonResponse(metarWithQnh(29.92)),
   };
   for (const [failure, checkwx] of Object.entries(failures)) {
     test(`shows no altitude when ${failure}`, async (t) => {
       const fetch = (url) => (url.includes('checkwx') ? checkwx() : defaultFetch(url));
       const page = await withPage(t, { fetch });
-      assert.equal(page.document.getElementById('qnh').textContent, 'indisponible');
-      for (const id of ['delta', 'fl65', 'fl115', 'fl195']) {
-        assert.equal(page.document.getElementById(id).textContent, '—', `#${id}`);
-      }
+      assert.deepEqual(table(page.document), {
+        qnh: 'indisponible',
+        delta: '—',
+        levels: { 65: '—', 115: '—', 195: '—' },
+      });
       assert.equal(page.consoleErrors.length, 1);
       assert.deepEqual(page.uncaughtErrors, []);
     });
@@ -205,11 +237,10 @@ describe('gallery wiring', () => {
   test('the rain gallery starts when its slide is shown', async (t) => {
     const { document, reveal } = await withPage(t);
     const gallery = document.querySelector('ul.gallery');
-    const [onSlideChanged] = reveal.listeners.slidechanged;
-    onSlideChanged({ previousSlide: document.querySelector('section'), currentSlide: gallery.closest('section') });
+    const title = document.querySelector('section');
+    reveal.emit('slidechanged', { previousSlide: title, currentSlide: gallery.closest('section') });
     const states = [...gallery.querySelectorAll('li')].map((li) => li.className);
-    assert.equal(states.filter((state) => state === 'active').length, 1);
-    assert.equal(states.filter((state) => state === 'inactive').length, 11);
-    onSlideChanged({ previousSlide: gallery.closest('section'), currentSlide: document.querySelector('section') });
+    assert.deepEqual(states, ['active', ...Array(11).fill('inactive')]);
+    reveal.emit('slidechanged', { previousSlide: gallery.closest('section'), currentSlide: title });
   });
 });

@@ -1,36 +1,59 @@
-.big_input_qnh {
-    width:120px;
-    height:40px;
-    font-size:25px;
+/* Forecast charts: fronts and 24 h forecast */
+.chart {
+    height: 620px;
 }
 
-.div_qnh {
-    max-width:90%;
-    max-height:100%;
-    height:650px;
-    background:white;
+/* meteox satellite and rain radar widgets */
+.radar {
+    width: 620px;
+    height: 620px;
 }
 
-.alti {
-    width:100%;
+#rain-forecast img {
+    height: 600px;
+}
+
+.photo {
+    height: 480px;
+}
+
+/* Flight level table, sunset and end of flights */
+.fl-panel {
+    max-width: 90%;
+    background: white;
+}
+
+.fl-table {
+    width: 100%;
     border-spacing: 0px;
     border-collapse: collapse;
     font-size: 15px;
 }
-.alti tbody {
-   border:2px solid black;
+.fl-table tbody {
+   border: 2px solid black;
 }
-
-
-.alti tr:nth-child(even){background-color: #f2f2f2}
-.alti th {
+.fl-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+.fl-table th {
     background-color: #4CAF50;
     color: white;
     padding: 5px;
 }
-.alti td {
+.fl-table td {
     padding: 5px;
 }
-.alti .centre {
+.fl-table .centre {
     text-align: center;
+}
+
+.fl-notes {
+    margin: 10px;
+    text-align: left;
+}
+
+.end-of-flights {
+    width: 120px;
+    height: 40px;
+    font-size: 25px;
 }

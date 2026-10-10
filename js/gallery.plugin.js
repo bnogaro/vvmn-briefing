@@ -1,118 +1,57 @@
-(function(Gallery) {
-	var galleryTimer, galleryMode;
+// reveal.js plugin that cycles through the images of each <ul class="gallery">
+// while its slide is shown:
+//   <ul class="gallery" data-interval="1" data-iterations="0">
+// data-interval: seconds per image (default 1).
+// data-iterations: plays before stopping on the last image, 0 loops forever (default 1).
+// Register it with Reveal.initialize({ plugins: [RevealGallery] }).
+window.RevealGallery = {
+  id: 'gallery',
 
-	Gallery.step = function (items, iterations) {
-		var length = items.length,
-			ptr = 0,
-			loops = 0;
+  init(deck) {
+    const timers = new Map();
 
-		return function () {
-			if (iterations > 0 && loops === iterations) {
-				return;
-			}
-			items[ptr].className = "inactive";
-			if (ptr === length - 1) {
-				loops++;
-				if (iterations === 0 || loops < iterations) {
-					ptr = 0;
-				}
-			} else {
-				ptr++;
-			}
-			items[ptr].className = "active";
-		};
-	};
+    // Returns a function that shows the next image each time it is called.
+    function stepper(items, iterations) {
+      let current = 0;
+      let loops = 0;
+      return () => {
+        if (iterations > 0 && loops === iterations) return;
+        items[current].className = 'inactive';
+        if (current === items.length - 1) {
+          loops++;
+          if (iterations === 0 || loops < iterations) current = 0;
+        } else {
+          current++;
+        }
+        items[current].className = 'active';
+      };
+    }
 
-	Gallery.start = function (galleryNode, contextNode) {
-		contextNode = contextNode || document.body.firstChild;
-		galleryMode = galleryNode.dataset.mode || 'normal';
+    function start(slide) {
+      for (const gallery of slide?.querySelectorAll('.gallery') ?? []) {
+        const items = [...gallery.querySelectorAll('li')];
+        if (items.length === 0) continue;
+        items.forEach((item, index) => {
+          item.className = index === 0 ? 'active' : 'inactive';
+        });
+        const iterations = gallery.dataset.iterations ? Number(gallery.dataset.iterations) : 1;
+        const interval = Number(gallery.dataset.interval || 1) * 1000;
+        clearInterval(timers.get(gallery));
+        timers.set(gallery, setInterval(stepper(items, iterations), interval));
+      }
+    }
 
-		if (galleryMode === 'full-screen') {
-			// FIXME remove depenency on Reveal, have a callback? function
-			// that will get a root node to move full screen slides to (ie. slidesNode)
+    function stop(slide) {
+      for (const gallery of slide?.querySelectorAll('.gallery') ?? []) {
+        clearInterval(timers.get(gallery));
+        timers.delete(gallery);
+      }
+    }
 
-			// for full screen mode we need to: 
-			// - take the gallery out of the flow and insert it before "slides"
-			// - hide slides
-			// - make it full screen
-
-			var placeholder = document.createElement("div");
-			placeholder.id = "gallery-placeholder";
-			galleryNode.parentNode.replaceChild(placeholder, galleryNode);
-
-			if (contextNode.parentNode) {
-				contextNode.parentNode.insertBefore(galleryNode, contextNode);
-			}
-		}
-
-		var items = Array.prototype.slice.apply(galleryNode.querySelectorAll("li"));
-		items.forEach(function (item, index) {
-			if (index === 0) {
-				item.className = "active";
-			} else {
-				item.className = "inactive";
-			}
-			var label = item.querySelector("label");
-			var img = item.querySelector("img");
-
-			if (galleryMode === 'full-screen') {
-				img.style.display = "none";
-				item.style.backgroundImage = "url(" + img.src + ")";
-			} else {
-				img.style.display = "";
-			}
-
-			if (!label && img.attributes.alt) {
-				label = document.createElement("label");
-				label.innerHTML = img.attributes.alt.value;
-				item.appendChild(label);
-			}
-		});
-
-		var iterations = galleryNode.dataset.iterations ? +galleryNode.dataset.iterations : 1;
-		var interval = (galleryNode.dataset.interval || 1) * 1000;
-		galleryTimer = setInterval(Gallery.step(items, iterations), interval);
-	};
-
-	// FIXME Gallery.stop should take elem and root nodes as well
-	Gallery.stop = function (galleryNode, contextNode) {
-		clearInterval(galleryTimer);
-
-		if (galleryMode === "full-screen") {
-			// - put the gallery back where it was
-			var placeholder = document.getElementById("gallery-placeholder");
-			placeholder.parentNode.replaceChild(galleryNode, placeholder);
-
-			var items = Array.prototype.slice.apply(galleryNode.querySelectorAll("li"));
-			items.forEach(function (item, index) {
-				var img = item.querySelector("img");
-				item.style.backgroundImage = "";
-				img.style.display = "";
-			});
-		}
-	};
-})(window.Gallery = window.Gallery || {});(function() {
-	if( typeof window.addEventListener === 'function' ) {
-		var slidesNode = document.querySelector(".slides");
-		Reveal.addEventListener("slidechanged", function (event) {
-			var galleryNode = event.previousSlide.querySelector('.gallery') || document.querySelector('.reveal > .gallery');
-			if (galleryNode) {
-				Gallery.stop(galleryNode, slidesNode);
-			}
-
-			galleryNode = event.currentSlide.querySelector('.gallery');
-			if (galleryNode) {				
-				Gallery.start(galleryNode, slidesNode);
-			}
-
-		});
-
-		// during initial load
-		if (Reveal.getCurrentSlide()) {
-			var galleryNode = Reveal.getCurrentSlide().querySelector('.gallery');
-			if (galleryNode) {
-				Gallery.start(galleryNode, slidesNode);
-			}
-		}
-	}
-})();
+    deck.on('ready', (event) => start(event.currentSlide));
+    deck.on('slidechanged', (event) => {
+      stop(event.previousSlide);
+      start(event.currentSlide);
+    });
+  },
+};
