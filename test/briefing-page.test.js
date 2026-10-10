@@ -21,12 +21,16 @@ describe('page load', () => {
     assert.deepEqual(page.uncaughtErrors, []);
   });
 
+  test('requests no missing local file', async (t) => {
+    const page = await withPage(t);
+    assert.deepEqual(page.missingFiles, []);
+  });
+
   test('starts reveal.js as a looping, auto-advancing kiosk', async (t) => {
     const { reveal } = await withPage(t);
     assert.equal(reveal.initOptions.loop, true);
     assert.equal(reveal.initOptions.history, false);
-    // Copied into this realm: deepEqual compares prototypes, which differ across jsdom.
-    assert.deepEqual(Array.from(reveal.configured, (options) => ({ ...options })), [{ autoSlide: 20000 }]);
+    assert.equal(reveal.initOptions.autoSlide, 20000);
   });
 });
 
