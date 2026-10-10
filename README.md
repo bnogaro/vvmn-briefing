@@ -36,3 +36,10 @@ The tests load `index.html` in [jsdom](https://github.com/jsdom/jsdom) with the 
 ## Releases
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org); `cz bump` sets the version and updates `CHANGELOG.md`.
+
+A commitizen hook rejects commit messages that don't follow the convention. After cloning, set it up once with [prek](https://github.com/j178/prek):
+
+```sh
+uv tool install prek
+prek install
+```
