@@ -83,3 +83,7 @@ describe('parisTime', () => {
     assert.throws(() => Briefing.parisTime(undefined), /invalid time/);
   });
 });
+
+test('endOfFlights is 30 minutes after sunset', () => {
+  assert.equal(Briefing.parisTime(Briefing.endOfFlights('2024-06-21T19:58:00Z')), '22:28');
+});

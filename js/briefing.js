@@ -99,6 +99,9 @@
     return time.toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
   }
 
+  // Aeronautical night begins 30 minutes after sunset (France): flights end by then.
+  const endOfFlights = (sunset) => new Date(new Date(sunset).getTime() + 30 * 60 * 1000);
+
   async function fetchJson(url) {
     const response = await fetch(url);
     if (!response.ok) {
@@ -137,6 +140,7 @@
       const sunset = parisTime(body.results.sunset);
       console.log(`Fetched sunset from api.sunrise-sunset.org: ${sunset}`);
       display.textContent = `Coucher de soleil : ${sunset}`;
+      document.getElementById('fdv').value = parisTime(endOfFlights(body.results.sunset));
     } catch (error) {
       console.error('Could not fetch the sunset:', error);
       display.textContent = 'Coucher de soleil : indisponible';
@@ -173,6 +177,7 @@
     floorTo5,
     qnhFromMetar,
     parisTime,
+    endOfFlights,
     render,
     showSunset,
     showFlightLevels,

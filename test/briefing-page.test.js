@@ -133,10 +133,16 @@ describe('sunset', () => {
     assert.equal(document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : 19:15');
   });
 
+  test('fills in the end of flights 30 minutes after sunset, at aeronautical night', async (t) => {
+    const { document } = await withPage(t);
+    assert.equal(document.getElementById('fdv').value, '19:45');
+  });
+
   test('says the sunset is unavailable and logs when the API fails', async (t) => {
     const fetch = (url) => (url.includes('sunrise-sunset') ? jsonResponse({}, 500) : defaultFetch(url));
     const page = await withPage(t, { fetch });
     assert.equal(page.document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : indisponible');
+    assert.equal(page.document.getElementById('fdv').value, '', 'end of flights left for the briefer');
     assert.equal(page.consoleErrors.length, 1);
     assert.deepEqual(page.uncaughtErrors, []);
   });
