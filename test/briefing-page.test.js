@@ -49,6 +49,11 @@ describe('date-dependent content', () => {
     assert.equal(document.querySelector('section p').textContent, 'Montagne Noire 06/03/2024');
   });
 
+  test('title slide uses the UTC calendar day', async (t) => {
+    const { document } = await withPage(t, { now: '2024-01-05T23:30:00-02:00' });
+    assert.equal(document.querySelector('section p').textContent, 'Montagne Noire 06/01/2024');
+  });
+
   test('rain gallery shows 07h to 18h of the day\'s 00Z AROME run for south-west France', async (t) => {
     const { document } = await withPage(t, { now: '2024-03-06T12:00:00Z' });
     const expected = Array.from(
@@ -138,14 +143,28 @@ describe('sunset', () => {
     assert.equal(document.getElementById('fdv').value, '19:45');
   });
 
-  test('says the sunset is unavailable and logs when the API fails', async (t) => {
-    const fetch = (url) => (url.includes('sunrise-sunset') ? jsonResponse({}, 500) : defaultFetch(url));
-    const page = await withPage(t, { fetch });
-    assert.equal(page.document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : indisponible');
-    assert.equal(page.document.getElementById('fdv').value, '', 'end of flights left for the briefer');
-    assert.equal(page.consoleErrors.length, 1);
-    assert.deepEqual(page.uncaughtErrors, []);
+  test('uses Paris summer time for the sunset and the end of flights', async (t) => {
+    const sunset = { results: { sunset: '2024-06-21T21:58:12+02:00' }, status: 'OK' };
+    const fetch = (url) => (url.includes('sunrise-sunset') ? jsonResponse(sunset) : defaultFetch(url));
+    const { document } = await withPage(t, { now: '2024-06-21T12:00:00Z', fetch });
+    assert.equal(document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : 21:58');
+    assert.equal(document.getElementById('fdv').value, '22:28');
   });
+
+  const failures = {
+    'the API fails': () => jsonResponse({}, 500),
+    'the API answers without a sunset': () => jsonResponse({ results: {}, status: 'OK' }),
+  };
+  for (const [failure, sunriseSunset] of Object.entries(failures)) {
+    test(`says the sunset is unavailable and logs when ${failure}`, async (t) => {
+      const fetch = (url) => (url.includes('sunrise-sunset') ? sunriseSunset() : defaultFetch(url));
+      const page = await withPage(t, { fetch });
+      assert.equal(page.document.getElementById('sunsetDisplay').textContent, 'Coucher de soleil : indisponible');
+      assert.equal(page.document.getElementById('fdv').value, '', 'end of flights left for the briefer');
+      assert.equal(page.consoleErrors.length, 1);
+      assert.deepEqual(page.uncaughtErrors, []);
+    });
+  }
 });
 
 describe('flight level table', () => {
@@ -173,6 +192,7 @@ describe('flight level table', () => {
     },
     'the METAR API answers an error': () => jsonResponse({ error: 'Unauthorized' }, 401),
     'the METAR has no observation': () => jsonResponse({ results: 0, data: [] }),
+    'the METAR has no barometer': () => jsonResponse({ results: 1, data: [{ icao: 'LFCK' }] }),
     'the METAR QNH is implausible': () => jsonResponse(metarWithQnh(29.92)),
   };
   for (const [failure, checkwx] of Object.entries(failures)) {

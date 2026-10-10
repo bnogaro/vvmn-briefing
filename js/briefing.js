@@ -144,17 +144,12 @@
     }
   }
 
-  Object.assign(Briefing, {
-    utcDate,
-    aromeRainUrls,
-    knmiFrontUrl,
-    lameteoTomorrowUrl,
-    windyUrl,
-    qnhFromMetar,
-    parisTime,
-    endOfFlights,
-    render,
-    showSunset,
-    showFlightLevels,
-  });
+  // Fills the page for `now`: the forecast charts at once, the sunset and the
+  // flight level table when their APIs answer. Resolves once both are shown.
+  function start(document, now) {
+    render(document, now);
+    return Promise.all([showSunset(document), showFlightLevels(document)]);
+  }
+
+  Object.assign(Briefing, { start });
 })((window.Briefing = window.Briefing || {}));
