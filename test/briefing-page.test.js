@@ -33,6 +33,14 @@ describe('page load', () => {
     assert.equal(reveal.initOptions.history, false);
     assert.equal(reveal.initOptions.autoSlide, 20000);
   });
+
+  test('keeps every slide on screen for at least 5 seconds', async (t) => {
+    const { document } = await withPage(t);
+    for (const slide of document.querySelectorAll('section[data-autoslide]')) {
+      const title = slide.querySelector('h2, h4')?.textContent;
+      assert.ok(Number(slide.dataset.autoslide) >= 5000, `${title}: ${slide.dataset.autoslide} ms`);
+    }
+  });
 });
 
 describe('date-dependent content', () => {
