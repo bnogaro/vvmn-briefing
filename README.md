@@ -33,6 +33,20 @@ npm test
 
 The tests load `index.html` in [jsdom](https://github.com/jsdom/jsdom) with the network stubbed and the clock fixed, so they run offline. GitHub Actions runs them on every push to `main` and on pull requests.
 
+## Dependencies
+
+Dependabot opens a pull request each month for the test tooling (npm), the GitHub Actions and the commitizen hook, and security updates as soon as an advisory is published. The tests run on each of these pull requests.
+
+reveal.js is the only dependency the site serves, and Dependabot does not update it: for a submodule it would propose unreleased commits. To move to a new [release](https://github.com/hakimel/reveal.js/releases):
+
+```sh
+git -C reveal.js fetch --tags
+git -C reveal.js checkout 6.0.2   # the release tag
+git add reveal.js
+```
+
+The tests replace reveal.js with a stub, so open `index.html` in a browser and step through the slides before merging.
+
 ## Releases
 
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org); `cz bump` sets the version and updates `CHANGELOG.md`.
