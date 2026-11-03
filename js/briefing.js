@@ -13,7 +13,8 @@
   const CHECKWX_API_KEY = '52fa72e59d364463b44cfa4ec3';
   const METAR_AIRPORT = 'LFCK';
 
-  const FLIGHT_LEVELS = [65, 115, 195];
+  // Places of the modelled soundings, as named by data-sounding in index.html.
+  const SOUNDINGS = { airfield: [LAT, LON], albi: ['43.9004', '1.972'] };
 
   const pad2 = (n) => String(n).padStart(2, '0');
 
@@ -57,27 +58,9 @@
 
   const meteoParapenteUrl = () => `https://meteo-parapente.com/#/${LAT},${LON},7`;
 
-  // Flight levels are pressure surfaces of the ICAO standard atmosphere.
-  // An altimeter set to QNH reads, at the surface of pressure p:
-  //   h = T0 / L * (1 - (p / QNH) ^ (R L / g))
-  const ISA_T0 = 288.15; // K
-  const ISA_LAPSE = 0.0065; // K/m
-  const ISA_EXPONENT = 0.190263; // R L / g
-  const ISA_P0 = 1013.25; // hPa
-  const FOOT = 0.3048; // m
-
-  const pressureAtFlightLevel = (fl) =>
-    ISA_P0 * Math.pow(1 - (ISA_LAPSE * fl * 100 * FOOT) / ISA_T0, 1 / ISA_EXPONENT);
-  const altitudeOnQnh = (pressure, qnh) => (ISA_T0 / ISA_LAPSE) * (1 - Math.pow(pressure / qnh, ISA_EXPONENT));
-
-  // Altitude (m) at which the altimeter, set to QNH, reaches flight level `fl`.
-  const flightLevelAltitude = (fl, qnh) => altitudeOnQnh(pressureAtFlightLevel(fl), qnh);
-
-  // Altitude (m) of the 1013.25 hPa surface: QNH altitude minus pressure altitude near the ground.
-  const qnhDelta = (qnh) => altitudeOnQnh(ISA_P0, qnh);
-
-  // Flight levels are used as ceilings: round down to stay below them.
-  const floorTo5 = (metres) => Math.floor(metres / 5) * 5;
+  // Meteociel AROME sounding, 6 hours into the run.
+  const soundingUrl = ([lat, lon]) =>
+    `https://www.meteociel.fr/modeles/sondage2arome.php?archive=0&ech=6&map=1&wrf=0&region=&type=1&lat=${lat}&lon=${lon}`;
 
   // QNH (hPa) of a decoded checkwx METAR; throws when there is none.
   function qnhFromMetar(body) {
@@ -121,13 +104,15 @@
     document.querySelectorAll('iframe[data-windy-level]').forEach((iframe) => {
       iframe.src = windyUrl(iframe.dataset.windyLevel);
     });
+    document.querySelectorAll('iframe[data-sounding]').forEach((iframe) => {
+      iframe.src = soundingUrl(SOUNDINGS[iframe.dataset.sounding]);
+    });
 
     const gallery = document.getElementById('rain-forecast');
     for (const url of aromeRainUrls(now)) {
       const item = document.createElement('li');
       const img = document.createElement('img');
       img.src = url;
-      img.style.cssText = 'height:600px; text-align:center;';
       item.appendChild(img);
       gallery.appendChild(item);
     }
@@ -160,26 +145,19 @@
     }
     console.log(`Fetched QNH from METAR at api.checkwx.com: ${qnh}`);
     cell('qnh').textContent = String(qnh);
-    cell('delta').textContent = String(Math.round(qnhDelta(qnh)));
-    for (const fl of FLIGHT_LEVELS) {
-      cell(`fl${fl}`).textContent = String(floorTo5(flightLevelAltitude(fl, qnh)));
-    }
+    cell('delta').textContent = String(FlightLevels.delta(qnh));
+    // The table lists the levels: one cell per level, marked data-fl="115".
+    document.querySelectorAll('[data-fl]').forEach((levelCell) => {
+      levelCell.textContent = String(FlightLevels.altitude(Number(levelCell.dataset.fl), qnh));
+    });
   }
 
-  Object.assign(Briefing, {
-    utcDate,
-    aromeRainUrls,
-    knmiFrontUrl,
-    lameteoTomorrowUrl,
-    windyUrl,
-    flightLevelAltitude,
-    qnhDelta,
-    floorTo5,
-    qnhFromMetar,
-    parisTime,
-    endOfFlights,
-    render,
-    showSunset,
-    showFlightLevels,
-  });
+  // Fills the page for `now`: the forecast charts at once, the sunset and the
+  // flight level table when their APIs answer. Resolves once both are shown.
+  function start(document, now) {
+    render(document, now);
+    return Promise.all([showSunset(document), showFlightLevels(document)]);
+  }
+
+  Object.assign(Briefing, { start });
 })((window.Briefing = window.Briefing || {}));
